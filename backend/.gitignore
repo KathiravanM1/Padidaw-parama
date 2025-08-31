@@ -1,0 +1,64 @@
+# Node modules
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# dotenv environment variables
+.env
+.env.* 
+!.env.example
+
+# Build output
+dist/
+build/
+.cache/
+.next/
+out/
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Test coverage
+coverage/
+
+# TypeScript build
+*.tsbuildinfo
+
+# Serverless framework
+.serverless/
+
+# AWS CDK
+cdk.out/
+
+# Storybook build outputs
+storybook-static/
+
+# Misc
+*.tgz
+*.zip
+*.tar
+.env
