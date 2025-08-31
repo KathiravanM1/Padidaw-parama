@@ -261,7 +261,7 @@ export default function SeniorLayout() {
                 </div>
             </main>
 
-            <SeniorFooter />
+            {/* <SeniorFooter /> */}
             
             {/* Scroll to Top Button */}
             <AnimatePresence>

@@ -322,7 +322,7 @@ export default function AttendanceTracker() {
                         transition={{ duration: 0.5, delay: 0.4 }}
                         className="space-y-8"
                     >
-                         <div className="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-red-500">
+                         <div className="bg-white p-6 m-2 rounded-2xl shadow-lg border-l-4 border-red-500">
                             <h3 className="text-4xl font-bold text-red-600 mb-2">{overallStats.criticalCount}</h3>
                             <p className="text-gray-600 font-medium">Subjects in Critical Zone</p>
                         </div>

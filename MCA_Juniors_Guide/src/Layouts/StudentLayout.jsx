@@ -272,7 +272,7 @@ export default function StudentLayout() {
                 </div>
             </main>
 
-            <StudentFooter />
+            {/* <StudentFooter /> */}
             
             {/* Scroll to Top Button */}
             <AnimatePresence>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5002/api';
+const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
 
 const ApiTest = () => {
   const [results, setResults] = useState({});
@@ -10,7 +10,7 @@ const ApiTest = () => {
   const testEndpoints = async () => {
     setLoading(true);
     const endpoints = [
-      { name: 'Server Root', url: 'http://localhost:5002/' },
+      { name: 'Server Root', url: `${API_BASE_URL}` },
       { name: 'Roadmap Health', url: `${API_BASE_URL}/roadmaps/health` },
       { name: 'Roadmap Test', url: `${API_BASE_URL}/roadmaps/test` },
       { name: 'Get All Roadmaps', url: `${API_BASE_URL}/roadmaps/all` }

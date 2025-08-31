@@ -34,7 +34,7 @@ import {
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:5002/api';
+const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
 
 const domainOptions = [
     { value: "all", label: "All Domains", icon: Filter },

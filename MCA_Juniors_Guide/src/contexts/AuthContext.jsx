@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const API_BASE_URL = 'http://localhost:5002/api';
+  const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
 
   useEffect(() => {
     if (token) {

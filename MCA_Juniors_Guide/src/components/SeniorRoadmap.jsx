@@ -69,7 +69,7 @@ export default function ExperienceForm() {
 
     const fetchCompanies = async () => {
         try {
-            const response = await fetch('http://localhost:5002/api/companies');
+            const response = await fetch('https://padidaw-parama-backend.onrender.com/api/companies');
             const result = await response.json();
             if (result.success) {
                 setCompanies(result.data);
@@ -83,7 +83,7 @@ export default function ExperienceForm() {
         if (!newCompanyName.trim()) return;
         
         try {
-            const response = await fetch('http://localhost:5002/api/companies', {
+            const response = await fetch('https://padidaw-parama-backend.onrender.com/api/companies', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newCompanyName.trim() })
@@ -169,7 +169,7 @@ export default function ExperienceForm() {
             submitData.append('resume', formData.resume);
 
             // Submit to backend
-            const response = await fetch('http://localhost:5002/api/roadmaps/submit', {
+            const response = await fetch('https://padidaw-parama-backend.onrender.com/api/roadmaps/submit', {
                 method: 'POST',
                 body: submitData,
             });

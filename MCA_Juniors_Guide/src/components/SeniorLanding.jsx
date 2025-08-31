@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { GraduationCap, LogOut, BookOpen, FileCode, UserCheck, Eye, Edit3, Lock, Rocket, FileText, Lightbulb, Zap, Target, ArrowRight, CheckCircle, Users, Calendar, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { FileCode, UserCheck, Eye, Rocket, ArrowRight, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 // Mock function for logout
