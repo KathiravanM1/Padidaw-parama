@@ -1326,9 +1326,6 @@ const AdminPanel = () => {
                         <a href={resource.url} target="_blank" rel="noopener noreferrer" className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" title="Download">
                           <Download className="w-4 h-4" />
                         </a>
-                        <button className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg" title="View Details">
-                          <Eye className="w-4 h-4" />
-                        </button>
                         <button 
                           onClick={() => handleResourceDeleteClick(resource)}
                           disabled={loading}

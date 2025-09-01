@@ -1,4 +1,5 @@
 import SeniorRoadmap from '../models/SeniorRoadmap.js';
+import { deleteFileFromS3 } from '../utils/s3Utils.js';
 
 export const submitRoadmap = async (req, res) => {
   try {
@@ -133,6 +134,43 @@ export const downloadResume = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch resume',
+      error: error.message
+    });
+  }
+};
+
+export const deleteRoadmap = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const roadmap = await SeniorRoadmap.findById(id);
+
+    if (!roadmap) {
+      return res.status(404).json({
+        success: false,
+        message: 'Roadmap not found'
+      });
+    }
+
+    // Delete resume file from S3
+    await deleteFileFromS3(roadmap.resumeUrl);
+
+    // Delete roadmap document from MongoDB
+    await SeniorRoadmap.findByIdAndDelete(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Roadmap and resume deleted successfully from both S3 and database',
+      deletedRoadmap: {
+        name: roadmap.name,
+        resumeFileName: roadmap.resumeFileName
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting roadmap:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete roadmap',
       error: error.message
     });
   }

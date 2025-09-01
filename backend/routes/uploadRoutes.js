@@ -1,6 +1,7 @@
 import express from "express";
 import upload from "../middleware/upload.js";
 import Semester from "../models/Semester.js";
+import { deleteFileFromS3 } from "../utils/s3Utils.js";
 
 const uploadrouter = express.Router();
 
@@ -87,6 +88,94 @@ uploadrouter.post(
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Upload failed", error: err.message });
+    }
+  }
+);
+
+// 🔹 Delete Material
+uploadrouter.delete(
+  "/:semId/:subjectId/materials/:fileId",
+  async (req, res) => {
+    try {
+      const { semId, subjectId, fileId } = req.params;
+
+      const semester = await Semester.findOne({ semId: parseInt(semId) });
+      if (!semester) {
+        return res.status(404).json({ message: "Semester not found" });
+      }
+
+      const subject = semester.subjects.id(subjectId) || 
+                     semester.subjects.find((s) => s.id === parseInt(subjectId));
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+
+      const material = subject.materials.id(fileId);
+      if (!material) {
+        return res.status(404).json({ message: "Material not found" });
+      }
+
+      // Delete from S3 first
+      await deleteFileFromS3(material.url);
+
+      // Remove from MongoDB
+      subject.materials.pull(fileId);
+      await semester.save();
+
+      res.json({
+        message: "Material deleted successfully from both S3 and database",
+        deletedFile: material.name
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ 
+        message: "Delete failed", 
+        error: err.message 
+      });
+    }
+  }
+);
+
+// 🔹 Delete Question Paper
+uploadrouter.delete(
+  "/:semId/:subjectId/questionPapers/:fileId",
+  async (req, res) => {
+    try {
+      const { semId, subjectId, fileId } = req.params;
+
+      const semester = await Semester.findOne({ semId: parseInt(semId) });
+      if (!semester) {
+        return res.status(404).json({ message: "Semester not found" });
+      }
+
+      const subject = semester.subjects.id(subjectId) || 
+                     semester.subjects.find((s) => s.id === parseInt(subjectId));
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+
+      const questionPaper = subject.questionPapers.id(fileId);
+      if (!questionPaper) {
+        return res.status(404).json({ message: "Question paper not found" });
+      }
+
+      // Delete from S3 first
+      await deleteFileFromS3(questionPaper.url);
+
+      // Remove from MongoDB
+      subject.questionPapers.pull(fileId);
+      await semester.save();
+
+      res.json({
+        message: "Question paper deleted successfully from both S3 and database",
+        deletedFile: questionPaper.name
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ 
+        message: "Delete failed", 
+        error: err.message 
+      });
     }
   }
 );

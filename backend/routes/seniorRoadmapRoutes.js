@@ -4,7 +4,8 @@ import {
   submitRoadmap,
   getAllRoadmaps,
   getRoadmapById,
-  downloadResume
+  downloadResume,
+  deleteRoadmap
 } from '../controllers/seniorRoadmapController.js';
 
 const router = express.Router();
@@ -52,6 +53,7 @@ router.get('/db-test', async (req, res) => {
 router.post('/submit', upload.single('resume'), submitRoadmap);
 router.get('/all', getAllRoadmaps);
 router.get('/download/:id', downloadResume);
+router.delete('/:id', deleteRoadmap);
 router.get('/:id', getRoadmapById);
 
 // Catch-all for debugging

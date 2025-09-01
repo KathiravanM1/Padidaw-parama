@@ -254,7 +254,16 @@ export const adminService = {
   // Delete academic resource
   deleteAcademicResource: async (resourceId, resourceType, semesterId, subjectId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/admin/academic-resources/${resourceId}?resourceType=${resourceType}&semesterId=${semesterId}&subjectId=${subjectId}`, {
+      let endpoint;
+      if (resourceType === 'Material') {
+        endpoint = `${API_BASE_URL}/admin/delete/materials/${semesterId}/${subjectId}/${resourceId}`;
+      } else if (resourceType === 'Question Paper') {
+        endpoint = `${API_BASE_URL}/admin/delete/questionPapers/${semesterId}/${subjectId}/${resourceId}`;
+      } else {
+        throw new Error('Invalid resource type');
+      }
+
+      const response = await fetch(endpoint, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });

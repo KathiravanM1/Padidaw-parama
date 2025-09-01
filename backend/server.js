@@ -12,6 +12,7 @@ import projectRoutes from './routes/projectRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import seniorRoadmapRoutes from './routes/seniorRoadmapRoutes.js';
 import companyRoutes from './routes/companyRoutes.js';
+import adminDeleteRouter from './routes/adminDeleteRoutes.js';
 
 dotenv.config();
 
@@ -47,6 +48,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/roadmaps', seniorRoadmapRoutes);
 app.use('/api/companies', companyRoutes);
+app.use('/api/admin/delete', adminDeleteRouter);
 app.use('/api', healthRoutes);
 
 app.get('/', (req, res) => {
