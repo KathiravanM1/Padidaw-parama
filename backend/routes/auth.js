@@ -183,9 +183,20 @@ router.delete('/admin/interview-experiences/:experienceId', authenticate, author
       return res.status(404).json({ message: 'Interview experience not found' });
     }
     
+    // Delete resume from S3 if it exists
+    if (experience.resumeUrl) {
+      try {
+        const { deleteFileFromS3 } = await import('../utils/s3Utils.js');
+        await deleteFileFromS3(experience.resumeUrl);
+      } catch (s3Error) {
+        console.error('Failed to delete resume from S3:', s3Error);
+        // Continue with MongoDB deletion even if S3 deletion fails
+      }
+    }
+    
     await SeniorRoadmap.findByIdAndDelete(experienceId);
     
-    res.json({ message: 'Interview experience deleted successfully' });
+    res.json({ message: 'Interview experience and resume deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

@@ -11,11 +11,17 @@ dotenv.config();
  */
 export const deleteFileFromS3 = async (fileUrl) => {
   try {
+    if (!fileUrl || typeof fileUrl !== 'string') {
+      console.log('No valid S3 URL provided, skipping S3 deletion');
+      return false;
+    }
+
     // Extract the key from the S3 URL
     const key = extractS3Key(fileUrl);
     
     if (!key) {
-      throw new Error("Invalid S3 URL format");
+      console.log('Invalid S3 URL format, skipping S3 deletion');
+      return false;
     }
 
     const deleteParams = {
@@ -28,7 +34,7 @@ export const deleteFileFromS3 = async (fileUrl) => {
     return true;
   } catch (error) {
     console.error(`❌ Error deleting file from S3:`, error);
-    throw error;
+    return false;
   }
 };
 
@@ -61,7 +67,6 @@ const extractS3Key = (url) => {
       console.log('Extracted key (format 3):', key);
       return key;
     }
-    
     console.log('No matching S3 URL format found');
     return null;
   } catch (error) {
