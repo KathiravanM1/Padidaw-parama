@@ -2,21 +2,21 @@ import express from "express";
 import Semester from "../models/Semester.js";
 import SeniorRoadmap from "../models/SeniorRoadmap.js";
 import { deleteFileFromS3 } from "../utils/s3Utils.js";
+import { authenticate, authorize } from "../middleware/auth.js";
 
 const adminDeleteRouter = express.Router();
 
 // 🔹 Admin Delete Material
-adminDeleteRouter.delete("/materials/:semId/:subjectId/:fileId", async (req, res) => {
+adminDeleteRouter.delete("/materials/:semId/:subjectId/:fileId", authenticate, authorize('admin'), async (req, res) => {
   try {
     const { semId, subjectId, fileId } = req.params;
 
-    const semester = await Semester.findOne({ semId: parseInt(semId) });
+    const semester = await Semester.findById(semId);
     if (!semester) {
       return res.status(404).json({ message: "Semester not found" });
     }
 
-    const subject = semester.subjects.id(subjectId) || 
-                   semester.subjects.find((s) => s.id === parseInt(subjectId));
+    const subject = semester.subjects.id(subjectId);
     if (!subject) {
       return res.status(404).json({ message: "Subject not found" });
     }
@@ -49,17 +49,16 @@ adminDeleteRouter.delete("/materials/:semId/:subjectId/:fileId", async (req, res
 });
 
 // 🔹 Admin Delete Question Paper
-adminDeleteRouter.delete("/questionPapers/:semId/:subjectId/:fileId", async (req, res) => {
+adminDeleteRouter.delete("/questionPapers/:semId/:subjectId/:fileId", authenticate, authorize('admin'), async (req, res) => {
   try {
     const { semId, subjectId, fileId } = req.params;
 
-    const semester = await Semester.findOne({ semId: parseInt(semId) });
+    const semester = await Semester.findById(semId);
     if (!semester) {
       return res.status(404).json({ message: "Semester not found" });
     }
 
-    const subject = semester.subjects.id(subjectId) || 
-                   semester.subjects.find((s) => s.id === parseInt(subjectId));
+    const subject = semester.subjects.id(subjectId);
     if (!subject) {
       return res.status(404).json({ message: "Subject not found" });
     }
@@ -92,7 +91,7 @@ adminDeleteRouter.delete("/questionPapers/:semId/:subjectId/:fileId", async (req
 });
 
 // 🔹 Admin Delete Senior Roadmap
-adminDeleteRouter.delete("/roadmaps/:id", async (req, res) => {
+adminDeleteRouter.delete("/roadmaps/:id", authenticate, authorize('admin'), async (req, res) => {
   try {
     const { id } = req.params;
 

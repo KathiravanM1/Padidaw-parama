@@ -255,9 +255,9 @@ export const adminService = {
   deleteAcademicResource: async (resourceId, resourceType, semesterId, subjectId) => {
     try {
       let endpoint;
-      if (resourceType === 'Material') {
+      if (resourceType === 'material') {
         endpoint = `${API_BASE_URL}/admin/delete/materials/${semesterId}/${subjectId}/${resourceId}`;
-      } else if (resourceType === 'Question Paper') {
+      } else if (resourceType === 'questionPaper') {
         endpoint = `${API_BASE_URL}/admin/delete/questionPapers/${semesterId}/${subjectId}/${resourceId}`;
       } else {
         throw new Error('Invalid resource type');
