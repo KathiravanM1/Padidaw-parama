@@ -74,14 +74,25 @@ const AnnaUniversityMarkingSystem = () => {
       const response = await studentService.getStudentData();
       const student = response.data;
       
+      console.log('Loaded student data:', student);
+      console.log('Current user:', user);
+      
       // Check if user has existing data
-      const hasData = student.registration_no && student.name;
+      const hasData = student.registration_no && student.name && student.semesters && student.semesters.length > 0;
       setHasExistingData(hasData);
       
-      // Always set student info from database if available
+      console.log('Has existing data:', hasData);
+      
+      // Set student info from database if available, otherwise use user data
+      const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';
       setStudentInfo({ 
         registration_no: student.registration_no || user?.registrationNo || '', 
-        name: student.name || user?.name || '' 
+        name: student.name || userName || '' 
+      });
+      
+      console.log('Set student info:', {
+        registration_no: student.registration_no || user?.registrationNo || '', 
+        name: student.name || userName || ''
       });
       
       // Convert student data to component format and load ALL semesters
@@ -120,9 +131,10 @@ const AnnaUniversityMarkingSystem = () => {
         console.log('No existing data found, starting fresh');
         // Initialize default state for new users
         setHasExistingData(false);
+        const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';
         setStudentInfo({ 
           registration_no: user?.registrationNo || '', 
-          name: user?.name || '' 
+          name: userName || '' 
         });
         setSelectedSemesters([1]);
         setActiveTab(1);

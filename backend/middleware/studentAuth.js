@@ -36,17 +36,26 @@ export const authenticateStudent = async (req, res, next) => {
       console.log('User found in User collection:', user ? 'Yes' : 'No');
       
       if (user && user.role === 'student') {
-        // Convert User to Student-like object for compatibility
-        student = {
-          _id: user._id,
-          registration_no: user.registrationNo || user.email, // Use registrationNo if available, fallback to email
-          name: `${user.firstName} ${user.lastName}`.trim(),
-          email: user.email,
-          current_cgpa: 0,
-          semesters: [],
-          isFromUserCollection: true // Flag to identify this is from User collection
-        };
-        console.log('User converted to student object:', student.name);
+        // Check if there's an existing Student record linked to this user
+        const existingStudent = await Student.findOne({ userId: user._id }).select('-password');
+        console.log('Existing Student record found for User:', existingStudent ? 'Yes' : 'No');
+        
+        if (existingStudent) {
+          // Use the existing Student record
+          student = existingStudent;
+        } else {
+          // Convert User to Student-like object for compatibility
+          student = {
+            _id: user._id,
+            registration_no: user.registrationNo || user.email,
+            name: `${user.firstName} ${user.lastName}`.trim(),
+            email: user.email,
+            current_cgpa: 0,
+            semesters: [],
+            isFromUserCollection: true
+          };
+          console.log('User converted to student object:', student.name);
+        }
       }
     }
     

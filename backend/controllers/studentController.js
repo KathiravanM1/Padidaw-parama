@@ -208,13 +208,20 @@ export const getStudentData = async (req, res) => {
       student = await Student.findOne({ userId: req.student._id }).select('-password');
       
       console.log('Student record found for User:', student ? 'Yes' : 'No');
+      if (student) {
+        console.log('Found student data:', {
+          registration_no: student.registration_no,
+          name: student.name,
+          semesters_count: student.semesters?.length || 0
+        });
+      }
       
       // If no Student record exists, return empty data structure
       if (!student) {
         return res.status(200).json({
           success: true,
           data: {
-            registration_no: req.student.registration_no,
+            registration_no: '', // Don't pre-fill with email
             name: req.student.name,
             current_cgpa: 0,
             semesters: []
