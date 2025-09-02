@@ -25,6 +25,11 @@ const UserSchema = new Schema({
     required: true,
     trim: true,
   },
+  registrationNo: {
+    type: String,
+    trim: true,
+    sparse: true, // Allow null values but ensure uniqueness when present
+  },
   role: {
     type: String,
     required: true,

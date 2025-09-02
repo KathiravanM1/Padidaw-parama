@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import Student from '../models/Student.js';
+import User from '../models/User.js';
 
 // JWT-based student authentication
 export const authenticateStudent = async (req, res, next) => {
@@ -14,24 +15,46 @@ export const authenticateStudent = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'student_secret_key');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     console.log('Decoded token:', decoded);
     
-    // Try to find student by the userId from token
-    let student = await Student.findById(decoded.userId || decoded.id).select('-password');
-    console.log('Student found by ID:', student ? 'Yes' : 'No');
+    let student = null;
+    
+    // First, try to find in Student collection
+    student = await Student.findById(decoded.userId || decoded.id).select('-password');
+    console.log('Student found in Student collection:', student ? 'Yes' : 'No');
     
     // If not found by ID, try to find by registration_no if it exists in token
     if (!student && decoded.registration_no) {
       student = await Student.findOne({ registration_no: decoded.registration_no }).select('-password');
-      console.log('Student found by registration_no:', student ? 'Yes' : 'No');
+      console.log('Student found by registration_no in Student collection:', student ? 'Yes' : 'No');
+    }
+    
+    // If still not found, check User collection for users with role 'student'
+    if (!student) {
+      const user = await User.findById(decoded.userId || decoded.id).select('-password');
+      console.log('User found in User collection:', user ? 'Yes' : 'No');
+      
+      if (user && user.role === 'student') {
+        // Convert User to Student-like object for compatibility
+        student = {
+          _id: user._id,
+          registration_no: user.registrationNo || user.email, // Use registrationNo if available, fallback to email
+          name: `${user.firstName} ${user.lastName}`.trim(),
+          email: user.email,
+          current_cgpa: 0,
+          semesters: [],
+          isFromUserCollection: true // Flag to identify this is from User collection
+        };
+        console.log('User converted to student object:', student.name);
+      }
     }
     
     if (!student) {
       console.log('No student found with userId:', decoded.userId || decoded.id);
       return res.status(401).json({
         success: false,
-        message: 'Invalid token. Student not found.'
+        message: 'Invalid token. Student not found or user is not a student.'
       });
     }
 

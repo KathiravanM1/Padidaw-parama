@@ -35,6 +35,7 @@ const getCurrentUserId = () => {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log('Token payload:', payload); // Debug log
       return payload.userId || payload.id; // Student ID from JWT
     } catch (e) {
       console.warn('Invalid token format:', e);

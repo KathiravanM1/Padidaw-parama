@@ -22,8 +22,8 @@ export const loginStudent = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: student._id, registration_no: student.registration_no },
-      process.env.JWT_SECRET || 'student_secret_key',
+      { userId: student._id, registration_no: student.registration_no },
+      process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
 
@@ -79,8 +79,8 @@ export const registerStudent = async (req, res) => {
     await student.save();
 
     const token = jwt.sign(
-      { id: student._id, registration_no: student.registration_no },
-      process.env.JWT_SECRET || 'student_secret_key',
+      { userId: student._id, registration_no: student.registration_no },
+      process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '24h' }
     );
 
@@ -141,20 +141,55 @@ export const updateStudentData = async (req, res) => {
 
     const current_cgpa = parseFloat(calculateCGPA(processedSemesters).toFixed(2));
 
-    // Update only the authenticated student's data
-    const student = await Student.findByIdAndUpdate(
-      req.student._id,
-      {
-        current_cgpa,
-        semesters: processedSemesters
-      },
-      { new: true, runValidators: true }
-    ).select('-password');
+    let student;
+    
+    // Handle users from User collection
+    if (req.student.isFromUserCollection) {
+      // Try to find existing Student record
+      student = await Student.findOne({ 
+        $or: [
+          { registration_no: req.student.registration_no },
+          { registration_no: req.student.email }
+        ]
+      });
+      
+      if (student) {
+        // Update existing Student record
+        student.current_cgpa = current_cgpa;
+        student.semesters = processedSemesters;
+        student.updatedAt = Date.now();
+        await student.save();
+      } else {
+        // Create new Student record if it doesn't exist
+        student = new Student({
+          registration_no: req.student.registration_no,
+          name: req.student.name,
+          password: 'temp_password', // Temporary password
+          current_cgpa,
+          semesters: processedSemesters
+        });
+        await student.save();
+      }
+    } else {
+      // Handle users from Student collection
+      student = await Student.findByIdAndUpdate(
+        req.student._id,
+        {
+          current_cgpa,
+          semesters: processedSemesters
+        },
+        { new: true, runValidators: true }
+      ).select('-password');
+    }
+
+    // Remove password from response
+    const studentData = student.toObject();
+    delete studentData.password;
 
     res.status(200).json({
       success: true,
       message: 'Student data updated successfully',
-      data: student
+      data: studentData
     });
   } catch (error) {
     console.error('Error updating student data:', error);
@@ -169,7 +204,32 @@ export const updateStudentData = async (req, res) => {
 // Get authenticated student's data
 export const getStudentData = async (req, res) => {
   try {
-    const student = await Student.findById(req.student._id).select('-password');
+    let student;
+    
+    // If user is from User collection, try to find corresponding Student record
+    if (req.student.isFromUserCollection) {
+      student = await Student.findOne({ 
+        $or: [
+          { registration_no: req.student.registration_no },
+          { registration_no: req.student.email }
+        ]
+      }).select('-password');
+      
+      // If no Student record exists, return the user data in Student format
+      if (!student) {
+        return res.status(200).json({
+          success: true,
+          data: {
+            registration_no: req.student.registration_no,
+            name: req.student.name,
+            current_cgpa: 0,
+            semesters: []
+          }
+        });
+      }
+    } else {
+      student = await Student.findById(req.student._id).select('-password');
+    }
 
     if (!student) {
       return res.status(404).json({
@@ -228,17 +288,50 @@ export const saveStudentData = async (req, res) => {
 
     const current_cgpa = parseFloat(calculateCGPA(processedSemesters).toFixed(2));
 
-    // Update only the authenticated student's data
-    const student = await Student.findByIdAndUpdate(
-      req.student._id,
-      {
-        registration_no,
-        name,
-        current_cgpa,
-        semesters: processedSemesters
-      },
-      { new: true, runValidators: true }
-    ).select('-password');
+    let student;
+    
+    // Handle users from User collection
+    if (req.student.isFromUserCollection) {
+      // Try to find existing Student record by registration_no or email
+      student = await Student.findOne({ 
+        $or: [
+          { registration_no: registration_no },
+          { registration_no: req.student.email }
+        ]
+      });
+      
+      if (student) {
+        // Update existing Student record
+        student.registration_no = registration_no;
+        student.name = name;
+        student.current_cgpa = current_cgpa;
+        student.semesters = processedSemesters;
+        student.updatedAt = Date.now();
+        await student.save();
+      } else {
+        // Create new Student record
+        student = new Student({
+          registration_no,
+          name,
+          password: 'temp_password', // Temporary password, won't be used for login
+          current_cgpa,
+          semesters: processedSemesters
+        });
+        await student.save();
+      }
+    } else {
+      // Handle users from Student collection
+      student = await Student.findByIdAndUpdate(
+        req.student._id,
+        {
+          registration_no,
+          name,
+          current_cgpa,
+          semesters: processedSemesters
+        },
+        { new: true, runValidators: true }
+      ).select('-password');
+    }
 
     if (!student) {
       return res.status(404).json({
@@ -247,10 +340,14 @@ export const saveStudentData = async (req, res) => {
       });
     }
 
+    // Remove password from response
+    const studentData = student.toObject();
+    delete studentData.password;
+
     res.status(200).json({
       success: true,
       message: 'Student data saved successfully',
-      data: student
+      data: studentData
     });
   } catch (error) {
     console.error('Error saving student data:', error);
