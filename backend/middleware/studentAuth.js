@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import jwt from 'jsonwebtoken';
 import Student from '../models/Student.js';
 
 // JWT-based student authentication
