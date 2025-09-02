@@ -24,8 +24,6 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('current_student_auth');
       throw new Error('User not authenticated');
     }
     throw error;
@@ -37,9 +35,9 @@ const getCurrentUserId = () => {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.id; // Student ID from JWT
+      return payload.userId || payload.id; // Student ID from JWT
     } catch (e) {
-      console.warn('Invalid token format');
+      console.warn('Invalid token format:', e);
       return null;
     }
   }
