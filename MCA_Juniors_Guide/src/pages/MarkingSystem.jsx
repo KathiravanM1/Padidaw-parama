@@ -2,41 +2,12 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calculator, BookOpen, Award, Info, Plus, Trash2, Edit3, Save, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { studentService } from '../services/studentService';
+import { useAuth } from '../contexts/AuthContext';
 
 // Curriculum Data for MCA Programme (2023 Regulations)
-const mcaCurriculum = {
-  1: [
-    { code: 'MA3111', name: 'Mathematical Foundations of Computer Science', credits: 4 },
-    { code: 'CA3101', name: 'Data Structures', credits: 4.5 },
-    { code: 'CA3102', name: 'Database Technologies', credits: 4.5 },
-    { code: 'CA3103', name: 'Java Programming', credits: 4 },
-    { code: 'CA3104', name: 'Computer Networks and Management', credits: 4 },
-    { code: 'CA3105', name: 'Advanced Software Engineering', credits: 3 },
-  ],
-  2: [
-    { code: 'CA3201', name: 'Advanced Data Structures', credits: 4 },
-    { code: 'CA3202', name: 'Advanced Database Technologies', credits: 4 },
-    { code: 'CA3203', name: 'Advanced Java Programming', credits: 4 },
-    { code: 'OS3201', name: 'Operating Systems', credits: 4 },
-    { code: 'OE3201', name: 'Open Elective I', credits: 3 },
-    { code: 'OE3202', name: 'Open Elective II', credits: 3 },
-    { code: 'CA3211', name: 'Advanced Data Structures Lab', credits: 2 },
-  ],
-  3: [
-    { code: 'CA3301', name: 'Artificial Intelligence', credits: 4 },
-    { code: 'CA3302', name: 'Machine Learning', credits: 4 },
-    { code: 'CA3303', name: 'Web Technologies', credits: 4 },
-    { code: 'OE3301', name: 'Open Elective III', credits: 3 },
-    { code: 'OE3302', name: 'Open Elective IV', credits: 3 },
-    { code: 'CA3311', name: 'Web Technologies Lab', credits: 2 },
-    { code: 'CA3391', name: 'Mini Project with Seminar', credits: 4 },
-  ],
-  4: [
-    { code: 'CA3491', name: 'Project Work / Internship', credits: 24 },
-  ],
-};
 
 const AnnaUniversityMarkingSystem = () => {
+  const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState(1);
   const [selectedSemesters, setSelectedSemesters] = useState([1]);
   const [allSemesterCourses, setAllSemesterCourses] = useState({});
@@ -45,6 +16,8 @@ const AnnaUniversityMarkingSystem = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [autoSaving, setAutoSaving] = useState(false);
 
   const gradeOptions = useMemo(() => [
     { grade: 'O', points: 10, range: '91-100' },
@@ -61,101 +34,183 @@ const AnnaUniversityMarkingSystem = () => {
     if (!allSemesterCourses[1]) {
       setAllSemesterCourses(prev => ({ ...prev, 1: [] }));
     }
-    // Load existing data on mount
-    loadStudentData();
-  }, []);
+    // Load existing data on mount only if user is authenticated
+    if (isAuthenticated) {
+      loadStudentData();
+    }
+  }, [isAuthenticated]);
+
+  // Auto-save student info with debouncing
+  useEffect(() => {
+    if (!isAuthenticated || !studentInfo.registration_no || !studentInfo.name) return;
+    
+    const timeoutId = setTimeout(() => {
+      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
+    }, 2000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [studentInfo.registration_no, studentInfo.name, isAuthenticated]);
+
+  // Auto-save course data when courses or semester selection changes
+  useEffect(() => {
+    if (!isAuthenticated || !studentInfo.registration_no || !studentInfo.name) return;
+    
+    const timeoutId = setTimeout(() => {
+      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
+    }, 1000); // Shorter delay for course changes
+    
+    return () => clearTimeout(timeoutId);
+  }, [allSemesterCourses, selectedSemesters, isAuthenticated, studentInfo.registration_no, studentInfo.name]);
 
   const loadStudentData = async () => {
+    if (!isAuthenticated) {
+      setError('Please log in to access your data');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError('');
       const response = await studentService.getStudentData();
       const student = response.data;
       
-      setStudentInfo({ registration_no: student.registration_no, name: student.name });
+      // Check if user has existing data
+      const hasData = student.registration_no && student.name;
+      setHasExistingData(hasData);
       
-      // Convert student data to component format
+      // Always set student info from database if available
+      setStudentInfo({ 
+        registration_no: student.registration_no || user?.registrationNo || '', 
+        name: student.name || user?.name || '' 
+      });
+      
+      // Convert student data to component format and load ALL semesters
       const coursesData = {};
       const selectedSems = [];
       
       if (student.semesters && student.semesters.length > 0) {
         student.semesters.forEach(semester => {
-          if (semester.courses && semester.courses.length > 0) {
-            selectedSems.push(semester.semester_number);
-            coursesData[semester.semester_number] = semester.courses.map((course, index) => ({
-              id: `${semester.semester_number}-${index}`,
-              name: course.course_name,
-              code: course.course_code,
-              credits: course.credits,
-              grade: course.grade,
-              gradePoints: course.grade_points
-            }));
-          }
+          const semNum = semester.semester_number;
+          selectedSems.push(semNum);
+          
+          // Load courses for this semester (even if empty)
+          coursesData[semNum] = semester.courses?.map((course, index) => ({
+            id: `${semNum}-${index}-${Date.now()}`,
+            name: course.course_name,
+            code: course.course_code,
+            credits: course.credits,
+            grade: course.grade,
+            gradePoints: course.grade_points
+          })) || [];
         });
         
-        setAllSemesterCourses(coursesData);
-        setSelectedSemesters(selectedSems);
+        // Update state with all loaded data
+        setAllSemesterCourses(prev => ({ ...prev, ...coursesData }));
+        setSelectedSemesters(selectedSems.length > 0 ? selectedSems.sort() : [1]);
+        
+        // Set active tab to first semester with data, or semester 1
+        const firstSemWithData = selectedSems.find(sem => coursesData[sem]?.length > 0) || selectedSems[0] || 1;
+        setActiveTab(firstSemWithData);
       }
       
     } catch (error) {
-      console.log('No existing data found, starting fresh');
+      if (error.message === 'User not authenticated') {
+        setError('Please log in to access your data');
+      } else {
+        console.log('No existing data found, starting fresh');
+        // Initialize default state for new users
+        setHasExistingData(false);
+        setStudentInfo({ 
+          registration_no: user?.registrationNo || '', 
+          name: user?.name || '' 
+        });
+        setSelectedSemesters([1]);
+        setActiveTab(1);
+        setAllSemesterCourses({ 1: [] });
+      }
    } finally {
       setLoading(false);
     }
   };
 
-  const saveStudentData = async () => {
-    if (!studentInfo.registration_no || !studentInfo.name) {
-      setError('Please enter registration number and name');
-      return;
-    }
+  const saveStudentInfo = async (regNo, name, isAutoSave = false) => {
+    if (!isAuthenticated || !regNo || !name) return;
     
     try {
-      setSaving(true);
-      setError('');
+      if (isAutoSave) setAutoSaving(true);
       
-      // Convert component data to API format
-      const semesters = Object.keys(allSemesterCourses)
-        .filter(sem => allSemesterCourses[sem].length > 0)
-        .map(sem => ({
+      const studentData = {
+        registration_no: regNo,
+        name: name,
+        semesters: selectedSemesters.map(sem => ({
           semester_number: parseInt(sem),
-          courses: allSemesterCourses[sem].map(course => ({
+          courses: (allSemesterCourses[sem] || []).map(course => ({
             course_code: course.code || `COURSE_${course.id}`,
             course_name: course.name,
             credits: course.credits,
             grade: course.grade,
             grade_points: course.gradePoints
           }))
-        }));
-      
-      const studentData = {
-        registration_no: studentInfo.registration_no,
-        name: studentInfo.name,
-        semesters
+        }))
       };
       
       await studentService.saveStudentData(studentData);
-      setSuccess('Data saved successfully!');
-      setTimeout(() => setSuccess(''), 3000);
+      setHasExistingData(true);
+      
+      if (!isAutoSave) {
+        const message = hasExistingData ? 'Data updated successfully!' : 'Data saved successfully!';
+        setSuccess(message);
+        setTimeout(() => setSuccess(''), 3000);
+      }
       
     } catch (error) {
-      setError(error.message || 'Failed to save data');
+      if (!isAutoSave) {
+        setError(error.message || 'Failed to save data');
+      }
     } finally {
-      setSaving(false);
+      if (isAutoSave) setAutoSaving(false);
     }
   };
 
+  const saveStudentData = async () => {
+    if (!isAuthenticated) {
+      setError('Please log in to save your data');
+      return;
+    }
+    
+    if (!studentInfo.registration_no || !studentInfo.name) {
+      setError('Please enter registration number and name');
+      return;
+    }
+    
+    setSaving(true);
+    setError('');
+    await saveStudentInfo(studentInfo.registration_no, studentInfo.name, false);
+    setSaving(false);
+  };
+
   const handleTabClick = useCallback((semester) => {
+    // Auto-save student info before switching tabs
+    if (studentInfo.registration_no && studentInfo.name) {
+      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
+    }
+    
     setActiveTab(semester);
     // Initialize empty courses if they don't exist yet
     if (!allSemesterCourses[semester]) {
       setAllSemesterCourses(prev => ({ ...prev, [semester]: [] }));
     }
-  }, [allSemesterCourses]);
+  }, [allSemesterCourses, studentInfo]);
 
   const handleSemesterCheck = useCallback((semester) => {
     if (selectedSemesters.includes(semester)) {
       setSelectedSemesters(prev => prev.filter(s => s !== semester).sort());
+      // Remove semester from courses when unchecked
+      setAllSemesterCourses(prev => {
+        const updated = { ...prev };
+        delete updated[semester];
+        return updated;
+      });
     } else {
       setSelectedSemesters(prev => [...prev, semester].sort());
       // Initialize empty courses if not already in state
@@ -163,25 +218,35 @@ const AnnaUniversityMarkingSystem = () => {
         setAllSemesterCourses(prev => ({ ...prev, [semester]: [] }));
       }
     }
-  }, [selectedSemesters, allSemesterCourses]);
+    
+    // Auto-save after semester selection change
+    if (studentInfo.registration_no && studentInfo.name) {
+      setTimeout(() => {
+        saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
+      }, 100);
+    }
+  }, [selectedSemesters, allSemesterCourses, studentInfo]);
 
   const updateCourse = useCallback((id, field, value) => {
-    setAllSemesterCourses(prev => ({
-      ...prev,
-      [activeTab]: prev[activeTab]?.map(course => {
-        if (course.id === id) {
-          const updated = { ...course, [field]: value };
-          if (field === 'grade') {
-            const gradeData = gradeOptions.find(g => g.grade === value);
-            updated.gradePoints = gradeData ? gradeData.points : 0;
-          } else if (field === 'credits') {
-            updated.credits = parseFloat(value) || 0;
+    setAllSemesterCourses(prev => {
+      const updated = {
+        ...prev,
+        [activeTab]: prev[activeTab]?.map(course => {
+          if (course.id === id) {
+            const updatedCourse = { ...course, [field]: value };
+            if (field === 'grade') {
+              const gradeData = gradeOptions.find(g => g.grade === value);
+              updatedCourse.gradePoints = gradeData ? gradeData.points : 0;
+            } else if (field === 'credits') {
+              updatedCourse.credits = parseFloat(value) || 0;
+            }
+            return updatedCourse;
           }
-          return updated;
-        }
-        return course;
-      }) || []
-    }));
+          return course;
+        }) || []
+      };
+      return updated;
+    });
   }, [activeTab, gradeOptions]);
 
   const addCourse = useCallback(() => {
@@ -193,17 +258,23 @@ const AnnaUniversityMarkingSystem = () => {
       grade: 'A',
       gradePoints: 8,
     };
-    setAllSemesterCourses(prev => ({
-      ...prev,
-      [activeTab]: [...(prev[activeTab] || []), newCourse]
-    }));
+    setAllSemesterCourses(prev => {
+      const updated = {
+        ...prev,
+        [activeTab]: [...(prev[activeTab] || []), newCourse]
+      };
+      return updated;
+    });
   }, [activeTab]);
 
   const removeCourse = useCallback((id) => {
-    setAllSemesterCourses(prev => ({
-      ...prev,
-      [activeTab]: prev[activeTab]?.filter(course => course.id !== id) || []
-    }));
+    setAllSemesterCourses(prev => {
+      const updated = {
+        ...prev,
+        [activeTab]: prev[activeTab]?.filter(course => course.id !== id) || []
+      };
+      return updated;
+    });
   }, [activeTab]);
 
   const calculateGPA = useCallback((semester) => {
@@ -242,6 +313,50 @@ const AnnaUniversityMarkingSystem = () => {
       </header>
 
       <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+        {/* Current User Info */}
+        {isAuthenticated && user && (
+          <div className="bg-white rounded-lg shadow-md p-4 mb-6 border-l-4" style={{ borderColor: '#16A085' }}>
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5" style={{ color: '#16A085' }} />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-800">
+                  Logged in as: <span className="text-[#16A085]">{user.name || 'Student'}</span>
+                </h3>
+                <p className="text-xs text-gray-600">
+                  {user.email && `Email: ${user.email}`}
+                  {user.registrationNo && ` | Reg No: ${user.registrationNo}`}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {!isAuthenticated && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-yellow-600" />
+              <p className="text-yellow-800 text-sm font-medium">
+                Please log in to save and access your personal CGPA data.
+              </p>
+            </div>
+          </div>
+        )}
+        
+        {isAuthenticated && !hasExistingData && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-green-800 text-sm font-medium">
+                  Welcome! Start by entering your details and adding subjects to calculate your CGPA.
+                </p>
+                <p className="text-green-700 text-xs mt-1">
+                  Your data will be automatically saved and linked to your account.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Assessment Breakdown Section */}
         <div 
           className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border-l-4 animate-fadeInUp" 
@@ -437,18 +552,44 @@ const AnnaUniversityMarkingSystem = () => {
         <div 
           className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 animate-fadeInUp"
         >
-          <div className="flex items-center mb-4 sm:mb-6">
-            <Calculator className="h-6 w-6 sm:h-8 sm:w-8 mr-2 sm:mr-3 flex-shrink-0" style={{ color: '#16A085' }} />
-            <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-800 font-serif leading-tight">
-              GPA & CGPA Calculator
-            </h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center">
+              <Calculator className="h-6 w-6 sm:h-8 sm:w-8 mr-2 sm:mr-3 flex-shrink-0" style={{ color: '#16A085' }} />
+              <h2 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-800 font-serif leading-tight">
+                GPA & CGPA Calculator
+              </h2>
+            </div>
+            {loading && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#16A085] border-t-transparent"></div>
+                Loading data...
+              </div>
+            )}
           </div>
           
           {/* Student Information */}
           <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg" style={{ backgroundColor: '#ECFAE5' }}>
-            <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800 mb-3 font-serif">
-              Student Information
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-gray-800 font-serif">
+                Student Information
+              </h3>
+              {isAuthenticated && (
+                <div className="flex items-center gap-2">
+                  {autoSaving && (
+                    <div className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                      Auto-saving...
+                    </div>
+                  )}
+                  <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    hasExistingData 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {hasExistingData ? 'Updating Existing Data' : 'Creating New Data'}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Registration Number</label>
@@ -456,7 +597,6 @@ const AnnaUniversityMarkingSystem = () => {
                   type="text"
                   value={studentInfo.registration_no}
                   onChange={(e) => setStudentInfo(prev => ({ ...prev, registration_no: e.target.value }))}
-                  onBlur={(e) => loadStudentData(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#16A085] text-sm"
                   placeholder="Enter registration number"
                 />
@@ -519,13 +659,23 @@ const AnnaUniversityMarkingSystem = () => {
           <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
             <div className="flex justify-between items-center">
               <h4 className="text-sm sm:text-base lg:text-lg font-bold text-gray-800">Subjects for Semester {activeTab}</h4>
-              <button
-                onClick={addCourse}
-                className="flex items-center gap-2 px-3 py-2 bg-[#16A085] text-white rounded-lg hover:bg-[#138f7a] transition-colors text-xs sm:text-sm font-semibold"
-              >
-                <Plus className="w-4 h-4" />
-                Add Subject
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => saveStudentInfo(studentInfo.registration_no, studentInfo.name, false)}
+                  disabled={!studentInfo.registration_no || !studentInfo.name || saving}
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-xs sm:text-sm font-semibold"
+                >
+                  <Save className="w-4 h-4" />
+                  {saving ? 'Saving...' : 'Save All'}
+                </button>
+                <button
+                  onClick={addCourse}
+                  className="flex items-center gap-2 px-3 py-2 bg-[#16A085] text-white rounded-lg hover:bg-[#138f7a] transition-colors text-xs sm:text-sm font-semibold"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Subject
+                </button>
+              </div>
             </div>
             
             {displayedCourses.length === 0 ? (
@@ -545,16 +695,18 @@ const AnnaUniversityMarkingSystem = () => {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                     <div className="flex-1 min-w-0">
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
-                        Subject Name
-                      </label>
-                      <input
-                        type="text"
-                        value={course.name}
-                        onChange={(e) => updateCourse(course.id, 'name', e.target.value)}
-                        className="w-full px-2 sm:px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#16A085] text-xs sm:text-sm"
-                        placeholder="Enter subject name"
-                      />
+                      <div>
+                        <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">
+                          Subject Name
+                        </label>
+                        <input
+                          type="text"
+                          value={course.name}
+                          onChange={(e) => updateCourse(course.id, 'name', e.target.value)}
+                          className="w-full px-2 sm:px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#16A085] text-xs sm:text-sm"
+                          placeholder="Enter subject name"
+                        />
+                      </div>
                     </div>
                     
                     <div className="flex gap-2 sm:gap-4 items-end">

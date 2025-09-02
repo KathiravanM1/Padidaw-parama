@@ -16,7 +16,7 @@ const SemesterSchema = new mongoose.Schema({
 }, { _id: false });
 
 const StudentSchema = new mongoose.Schema({
-  registration_no: { type: String, required: true, unique: true },
+  registration_no: { type: String, required: true },
   name: { type: String, required: true },
   password: { type: String, required: true },
   current_cgpa: { type: Number, default: 0 },
@@ -24,6 +24,9 @@ const StudentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// Add compound unique index for registration_no to prevent duplicates per student
+StudentSchema.index({ registration_no: 1 }, { unique: true });
 
 StudentSchema.pre('save', async function(next) {
   this.updatedAt = Date.now();

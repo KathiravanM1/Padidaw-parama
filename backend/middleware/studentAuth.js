@@ -1,30 +1,36 @@
+import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import Student from '../models/Student.js';
 
-// Single user authentication - always use the first student or create one
+// JWT-based student authentication
 export const authenticateStudent = async (req, res, next) => {
   try {
-    // Find the first student or create a default one
-    let student = await Student.findOne().select('-password');
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access denied. No token provided.'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'student_secret_key');
+    const student = await Student.findById(decoded.id).select('-password');
     
     if (!student) {
-      // Create default student if none exists
-      student = new Student({
-        registration_no: 'DEFAULT_USER',
-        name: 'Default Student',
-        password: 'default123',
-        semesters: []
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid token. Student not found.'
       });
-      await student.save();
-      student = await Student.findById(student._id).select('-password');
     }
 
     req.student = student;
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    res.status(500).json({
+    res.status(401).json({
       success: false,
-      message: 'Authentication error',
+      message: 'Invalid token.',
       error: error.message
     });
   }

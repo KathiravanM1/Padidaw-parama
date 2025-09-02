@@ -192,7 +192,7 @@ export const getStudentData = async (req, res) => {
   }
 };
 
-// Create or update student data (single user system)
+// Create or update student CGPA data for authenticated student
 export const saveStudentData = async (req, res) => {
   try {
     const { registration_no, name, semesters } = req.body;
@@ -228,7 +228,7 @@ export const saveStudentData = async (req, res) => {
 
     const current_cgpa = parseFloat(calculateCGPA(processedSemesters).toFixed(2));
 
-    // Update the single user's data
+    // Update only the authenticated student's data
     const student = await Student.findByIdAndUpdate(
       req.student._id,
       {
@@ -237,8 +237,15 @@ export const saveStudentData = async (req, res) => {
         current_cgpa,
         semesters: processedSemesters
       },
-      { new: true, runValidators: true, upsert: true }
+      { new: true, runValidators: true }
     ).select('-password');
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: 'Student not found'
+      });
+    }
 
     res.status(200).json({
       success: true,
