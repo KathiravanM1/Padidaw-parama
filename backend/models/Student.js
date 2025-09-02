@@ -21,6 +21,7 @@ const StudentSchema = new mongoose.Schema({
   password: { type: String, required: true },
   current_cgpa: { type: Number, default: 0 },
   semesters: [SemesterSchema],
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Link to User collection
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

@@ -145,13 +145,8 @@ export const updateStudentData = async (req, res) => {
     
     // Handle users from User collection
     if (req.student.isFromUserCollection) {
-      // Try to find existing Student record
-      student = await Student.findOne({ 
-        $or: [
-          { registration_no: req.student.registration_no },
-          { registration_no: req.student.email }
-        ]
-      });
+      // Find existing Student record by userId
+      student = await Student.findOne({ userId: req.student._id });
       
       if (student) {
         // Update existing Student record
@@ -164,9 +159,10 @@ export const updateStudentData = async (req, res) => {
         student = new Student({
           registration_no: req.student.registration_no,
           name: req.student.name,
-          password: 'temp_password', // Temporary password
+          password: 'temp_password',
           current_cgpa,
-          semesters: processedSemesters
+          semesters: processedSemesters,
+          userId: req.student._id // Link to User collection
         });
         await student.save();
       }
@@ -208,14 +204,12 @@ export const getStudentData = async (req, res) => {
     
     // If user is from User collection, try to find corresponding Student record
     if (req.student.isFromUserCollection) {
-      student = await Student.findOne({ 
-        $or: [
-          { registration_no: req.student.registration_no },
-          { registration_no: req.student.email }
-        ]
-      }).select('-password');
+      // Find by userId field that links to User collection
+      student = await Student.findOne({ userId: req.student._id }).select('-password');
       
-      // If no Student record exists, return the user data in Student format
+      console.log('Student record found for User:', student ? 'Yes' : 'No');
+      
+      // If no Student record exists, return empty data structure
       if (!student) {
         return res.status(200).json({
           success: true,
@@ -292,13 +286,8 @@ export const saveStudentData = async (req, res) => {
     
     // Handle users from User collection
     if (req.student.isFromUserCollection) {
-      // Try to find existing Student record by registration_no or email
-      student = await Student.findOne({ 
-        $or: [
-          { registration_no: registration_no },
-          { registration_no: req.student.email }
-        ]
-      });
+      // Find existing Student record by userId
+      student = await Student.findOne({ userId: req.student._id });
       
       if (student) {
         // Update existing Student record
@@ -309,13 +298,14 @@ export const saveStudentData = async (req, res) => {
         student.updatedAt = Date.now();
         await student.save();
       } else {
-        // Create new Student record
+        // Create new Student record linked to User
         student = new Student({
           registration_no,
           name,
-          password: 'temp_password', // Temporary password, won't be used for login
+          password: 'temp_password',
           current_cgpa,
-          semesters: processedSemesters
+          semesters: processedSemesters,
+          userId: req.student._id // Link to User collection
         });
         await student.save();
       }
