@@ -71,6 +71,10 @@ export const studentService = {
       try {
         const testResponse = await api.get('/students/test');
         console.log('Test endpoint response:', testResponse.data);
+        
+        // Check what's in the database
+        const debugResponse = await api.get('/students/debug/all');
+        console.log('Database contents:', debugResponse.data);
       } catch (testError) {
         console.error('Test endpoint failed:', testError.response?.data || testError.message);
       }

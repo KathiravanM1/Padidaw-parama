@@ -122,13 +122,31 @@ export const getStudentScores = async (req, res) => {
 
     // Find existing student data linked to this user
     let studentData = await Student.findOne({ userId: req.user._id }).select('-password');
-    console.log('Student data found:', studentData ? 'Yes' : 'No');
+    console.log('Student data found by userId:', studentData ? 'Yes' : 'No');
+    
+    // If not found by userId, try to find by name match and link it
+    if (!studentData) {
+      const userName = `${req.user.firstName} ${req.user.lastName}`.trim();
+      console.log('Searching for student by name:', userName);
+      
+      studentData = await Student.findOne({ name: userName }).select('-password');
+      console.log('Student data found by name:', studentData ? 'Yes' : 'No');
+      
+      if (studentData) {
+        // Link the existing student data to this user
+        console.log('Linking existing student data to user');
+        studentData.userId = req.user._id;
+        await studentData.save();
+        console.log('Student data linked successfully');
+      }
+    }
     
     if (studentData) {
       console.log('Student data details:', {
         registration_no: studentData.registration_no,
         name: studentData.name,
-        semesters_count: studentData.semesters?.length || 0
+        semesters_count: studentData.semesters?.length || 0,
+        current_cgpa: studentData.current_cgpa
       });
     }
     

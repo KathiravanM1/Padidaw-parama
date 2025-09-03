@@ -45,4 +45,25 @@ router.get('/test', authenticate, (req, res) => {
   });
 });
 
+// Debug endpoint to check all students in database
+router.get('/debug/all', authenticate, async (req, res) => {
+  try {
+    const students = await Student.find({}).select('-password').limit(10);
+    res.json({
+      success: true,
+      count: students.length,
+      students: students.map(s => ({
+        _id: s._id,
+        name: s.name,
+        registration_no: s.registration_no,
+        userId: s.userId,
+        current_cgpa: s.current_cgpa,
+        semesters_count: s.semesters?.length || 0
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;
