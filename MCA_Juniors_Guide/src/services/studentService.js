@@ -58,7 +58,55 @@ const saveLocalData = (data) => {
 };
 
 export const studentService = {
-  // Save or update student CGPA data
+  // Get student scores - Main function to fetch data
+  getStudentData: async () => {
+    const userId = getCurrentUserId();
+    if (!userId) throw new Error('User not authenticated');
+    
+    try {
+      console.log('Fetching student data from API...');
+      const response = await api.get('/students/scores');
+      const dbData = response.data.data;
+      
+      console.log('Received student data:', dbData);
+      
+      return {
+        data: {
+          registration_no: dbData.registration_no || '',
+          name: dbData.name || '',
+          current_cgpa: dbData.current_cgpa || 0,
+          semesters: dbData.semesters || [],
+          hasData: dbData.hasData || false
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching student data:', error);
+      
+      if (error.response?.status === 403) {
+        throw new Error('Access denied. Only students can access this data.');
+      }
+      
+      // Fallback to local storage
+      const allData = getLocalData();
+      const userData = allData[userId];
+      
+      if (!userData) {
+        return {
+          data: {
+            registration_no: '',
+            name: '',
+            current_cgpa: 0,
+            semesters: [],
+            hasData: false
+          }
+        };
+      }
+      
+      return { data: { ...userData, hasData: true } };
+    }
+  },
+
+  // Save or update student data
   saveStudentData: async (studentData) => {
     const userId = getCurrentUserId();
     if (!userId) throw new Error('User not authenticated');
@@ -79,63 +127,34 @@ export const studentService = {
         }))
       };
       
-      // Use POST for create/update (backend handles upsert)
-      const response = await api.post('/students/data', payload);
-      return response.data;
+      console.log('Saving student data:', payload);
+      
+      // Try to update first, if fails then add
+      try {
+        const response = await api.put('/students/scores', payload);
+        console.log('Data updated successfully');
+        return response.data;
+      } catch (updateError) {
+        if (updateError.response?.status === 404) {
+          // No existing data, create new
+          const response = await api.post('/students/scores', payload);
+          console.log('Data created successfully');
+          return response.data;
+        }
+        throw updateError;
+      }
     } catch (error) {
+      console.error('Error saving student data:', error);
+      
+      if (error.response?.status === 403) {
+        throw new Error('Access denied. Only students can save data.');
+      }
+      
       // Fallback to local storage
       const allData = getLocalData();
       allData[userId] = { ...studentData, lastUpdated: new Date().toISOString() };
       saveLocalData(allData);
       return { data: studentData, message: 'Saved locally' };
-    }
-  },
-
-  // Get student CGPA data
-  getStudentData: async () => {
-    const userId = getCurrentUserId();
-    if (!userId) throw new Error('User not authenticated');
-    
-    try {
-      // Try API first
-      const response = await api.get('/students/data');
-      const dbData = response.data.data;
-      
-      // Return data in the format expected by frontend
-      return {
-        data: {
-          registration_no: dbData.registration_no,
-          name: dbData.name,
-          semesters: dbData.semesters || []
-        }
-      };
-    } catch (error) {
-      if (error.response?.status === 404) {
-        // No data found, return empty structure
-        return {
-          data: {
-            registration_no: '',
-            name: '',
-            semesters: []
-          }
-        };
-      }
-      
-      // Fallback to local storage
-      const allData = getLocalData();
-      const userData = allData[userId];
-      
-      if (!userData) {
-        return {
-          data: {
-            registration_no: '',
-            name: '',
-            semesters: []
-          }
-        };
-      }
-      
-      return { data: userData };
     }
   }
 };

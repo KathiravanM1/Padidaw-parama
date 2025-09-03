@@ -77,11 +77,12 @@ const AnnaUniversityMarkingSystem = () => {
       console.log('Loaded student data:', student);
       console.log('Current user:', user);
       
-      // Check if user has existing data
-      const hasData = student.registration_no && student.name && student.semesters && student.semesters.length > 0;
+      // Check if user has existing data based on backend response
+      const hasData = student.hasData || (student.semesters && student.semesters.length > 0);
       setHasExistingData(hasData);
       
       console.log('Has existing data:', hasData);
+      console.log('Student semesters:', student.semesters);
       
       // Set student info from database if available, otherwise use user data
       const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';
@@ -125,8 +126,12 @@ const AnnaUniversityMarkingSystem = () => {
       }
       
     } catch (error) {
+      console.error('Error loading student data:', error);
+      
       if (error.message === 'User not authenticated') {
         setError('Please log in to access your data');
+      } else if (error.message.includes('Access denied')) {
+        setError('Access denied. Only students can access the marking system.');
       } else {
         console.log('No existing data found, starting fresh');
         // Initialize default state for new users
@@ -176,8 +181,13 @@ const AnnaUniversityMarkingSystem = () => {
       }
       
     } catch (error) {
+      console.error('Error saving student data:', error);
       if (!isAutoSave) {
-        setError(error.message || 'Failed to save data');
+        if (error.message.includes('Access denied')) {
+          setError('Access denied. Only students can save data.');
+        } else {
+          setError(error.message || 'Failed to save data');
+        }
       }
     } finally {
       if (isAutoSave) setAutoSaving(false);
@@ -332,13 +342,25 @@ const AnnaUniversityMarkingSystem = () => {
               <User className="h-5 w-5" style={{ color: '#16A085' }} />
               <div>
                 <h3 className="text-sm font-semibold text-gray-800">
-                  Logged in as: <span className="text-[#16A085]">{user.name || 'Student'}</span>
+                  Logged in as: <span className="text-[#16A085]">{`${user.firstName} ${user.lastName}`.trim() || 'Student'}</span>
                 </h3>
                 <p className="text-xs text-gray-600">
                   {user.email && `Email: ${user.email}`}
+                  {user.role && ` | Role: ${user.role}`}
                   {user.registrationNo && ` | Reg No: ${user.registrationNo}`}
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+        
+        {isAuthenticated && user && user.role !== 'student' && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-600" />
+              <p className="text-red-800 text-sm font-medium">
+                Access Denied: Only students can access the CGPA marking system. Your role: {user.role}
+              </p>
             </div>
           </div>
         )}
@@ -354,7 +376,7 @@ const AnnaUniversityMarkingSystem = () => {
           </div>
         )}
         
-        {isAuthenticated && !hasExistingData && (
+        {isAuthenticated && user && user.role === 'student' && !hasExistingData && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-green-600" />
@@ -369,6 +391,9 @@ const AnnaUniversityMarkingSystem = () => {
             </div>
           </div>
         )}
+        {/* Only show content for students */}
+        {(!isAuthenticated || (user && user.role === 'student')) && (
+        <>
         {/* Assessment Breakdown Section */}
         <div 
           className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8 border-l-4 animate-fadeInUp" 
@@ -836,6 +861,8 @@ const AnnaUniversityMarkingSystem = () => {
             </motion.div>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Global Styles with Animations */}

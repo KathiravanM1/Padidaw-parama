@@ -1,22 +1,35 @@
 import express from 'express';
-import { loginStudent, registerStudent, updateStudentData, getStudentData, saveStudentData } from '../controllers/studentController.js';
+import { 
+  loginStudent, 
+  registerStudent, 
+  getStudentScores, 
+  addStudentScores, 
+  updateStudentScores,
+  // Legacy functions
+  getStudentData,
+  saveStudentData,
+  updateStudentData
+} from '../controllers/studentController.js';
+import { authenticate } from '../middleware/auth.js';
 import { authenticateStudent } from '../middleware/studentAuth.js';
 
 const router = express.Router();
 
-// POST /api/students/register - Register new student
+// Legacy routes for backward compatibility
 router.post('/register', registerStudent);
-
-// POST /api/students/login - Student login
 router.post('/login', loginStudent);
-
-// POST /api/students/data - Create/Save student data (single user)
 router.post('/data', authenticateStudent, saveStudentData);
-
-// PUT /api/students/data - Update student data (authenticated)
 router.put('/data', authenticateStudent, updateStudentData);
-
-// GET /api/students/data - Get authenticated student's data
 router.get('/data', authenticateStudent, getStudentData);
+
+// New routes using User authentication
+// GET /api/students/scores - Get student scores (requires User auth with student role)
+router.get('/scores', authenticate, getStudentScores);
+
+// POST /api/students/scores - Add student scores (requires User auth with student role)
+router.post('/scores', authenticate, addStudentScores);
+
+// PUT /api/students/scores - Update student scores (requires User auth with student role)
+router.put('/scores', authenticate, updateStudentScores);
 
 export default router;

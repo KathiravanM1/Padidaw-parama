@@ -1,7 +1,8 @@
 import Student from '../models/Student.js';
+import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
 
-// Student login
+// Student login (legacy - for direct student accounts)
 export const loginStudent = async (req, res) => {
   try {
     const { registration_no, password } = req.body;
@@ -48,7 +49,7 @@ export const loginStudent = async (req, res) => {
   }
 };
 
-// Student registration
+// Student registration (legacy - for direct student accounts)
 export const registerStudent = async (req, res) => {
   try {
     const { registration_no, name, password } = req.body;
@@ -105,146 +106,48 @@ export const registerStudent = async (req, res) => {
   }
 };
 
-// Update student data (authenticated)
-export const updateStudentData = async (req, res) => {
+// Get student scores - Main endpoint for fetching student data
+export const getStudentScores = async (req, res) => {
   try {
-    const { semesters } = req.body;
-
-    if (!semesters) {
-      return res.status(400).json({
+    console.log('Getting student scores for user:', req.user._id);
+    
+    // Check if user is a student
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
         success: false,
-        message: 'Semesters data is required'
+        message: 'Access denied. Only students can access this endpoint.'
       });
     }
 
-    // Calculate CGPA
-    const calculateCGPA = (semesters) => {
-      const allCourses = semesters.flatMap(sem => sem.courses || []);
-      const passedCourses = allCourses.filter(course => course.grade !== 'U');
-      const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
-      const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
-      return totalCredits > 0 ? (totalGradePoints / totalCredits) : 0;
-    };
-
-    // Calculate GPA for each semester
-    const processedSemesters = semesters.map(semester => {
-      const passedCourses = semester.courses.filter(course => course.grade !== 'U');
-      const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
-      const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
-      const gpa = totalCredits > 0 ? (totalGradePoints / totalCredits) : 0;
-      
-      return {
-        ...semester,
-        gpa: parseFloat(gpa.toFixed(2))
-      };
-    });
-
-    const current_cgpa = parseFloat(calculateCGPA(processedSemesters).toFixed(2));
-
-    let student;
+    // Find existing student data linked to this user
+    let studentData = await Student.findOne({ userId: req.user._id }).select('-password');
     
-    // Handle users from User collection
-    if (req.student.isFromUserCollection) {
-      // Find existing Student record by userId
-      student = await Student.findOne({ userId: req.student._id });
-      
-      if (student) {
-        // Update existing Student record
-        student.current_cgpa = current_cgpa;
-        student.semesters = processedSemesters;
-        student.updatedAt = Date.now();
-        await student.save();
-      } else {
-        // Create new Student record if it doesn't exist
-        student = new Student({
-          registration_no: req.student.registration_no,
-          name: req.student.name,
-          password: 'temp_password',
-          current_cgpa,
-          semesters: processedSemesters,
-          userId: req.student._id // Link to User collection
-        });
-        await student.save();
-      }
-    } else {
-      // Handle users from Student collection
-      student = await Student.findByIdAndUpdate(
-        req.student._id,
-        {
-          current_cgpa,
-          semesters: processedSemesters
-        },
-        { new: true, runValidators: true }
-      ).select('-password');
-    }
-
-    // Remove password from response
-    const studentData = student.toObject();
-    delete studentData.password;
-
-    res.status(200).json({
-      success: true,
-      message: 'Student data updated successfully',
-      data: studentData
-    });
-  } catch (error) {
-    console.error('Error updating student data:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update student data',
-      error: error.message
-    });
-  }
-};
-
-// Get authenticated student's data
-export const getStudentData = async (req, res) => {
-  try {
-    let student;
-    
-    // If user is from User collection, try to find corresponding Student record
-    if (req.student.isFromUserCollection) {
-      // Find by userId field that links to User collection
-      student = await Student.findOne({ userId: req.student._id }).select('-password');
-      
-      console.log('Student record found for User:', student ? 'Yes' : 'No');
-      if (student) {
-        console.log('Found student data:', {
-          registration_no: student.registration_no,
-          name: student.name,
-          semesters_count: student.semesters?.length || 0
-        });
-      }
-      
-      // If no Student record exists, return empty data structure
-      if (!student) {
-        return res.status(200).json({
-          success: true,
-          data: {
-            registration_no: '', // Don't pre-fill with email
-            name: req.student.name,
-            current_cgpa: 0,
-            semesters: []
-          }
-        });
-      }
-    } else {
-      student = await Student.findById(req.student._id).select('-password');
-    }
-
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found'
+    if (!studentData) {
+      // No data exists, return empty structure
+      return res.status(200).json({
+        success: true,
+        data: {
+          registration_no: '',
+          name: `${req.user.firstName} ${req.user.lastName}`.trim(),
+          current_cgpa: 0,
+          semesters: [],
+          hasData: false
+        }
       });
     }
 
     res.status(200).json({
       success: true,
-      data: student
+      data: {
+        registration_no: studentData.registration_no,
+        name: studentData.name,
+        current_cgpa: studentData.current_cgpa,
+        semesters: studentData.semesters,
+        hasData: true
+      }
     });
   } catch (error) {
-    console.error('Error fetching student data:', error);
+    console.error('Error fetching student scores:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch student data',
@@ -253,10 +156,20 @@ export const getStudentData = async (req, res) => {
   }
 };
 
-// Create or update student CGPA data for authenticated student
-export const saveStudentData = async (req, res) => {
+// Add student scores - Create new student data
+export const addStudentScores = async (req, res) => {
   try {
     const { registration_no, name, semesters } = req.body;
+
+    console.log('Adding student scores for user:', req.user._id);
+    
+    // Check if user is a student
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only students can access this endpoint.'
+      });
+    }
 
     if (!registration_no || !name) {
       return res.status(400).json({
@@ -265,16 +178,16 @@ export const saveStudentData = async (req, res) => {
       });
     }
 
-    // Calculate CGPA
-    const calculateCGPA = (semesters) => {
-      const allCourses = semesters.flatMap(sem => sem.courses || []);
-      const passedCourses = allCourses.filter(course => course.grade !== 'U');
-      const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
-      const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
-      return totalCredits > 0 ? (totalGradePoints / totalCredits) : 0;
-    };
+    // Check if student data already exists
+    const existingData = await Student.findOne({ userId: req.user._id });
+    if (existingData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Student data already exists. Use update endpoint instead.'
+      });
+    }
 
-    // Calculate GPA for each semester
+    // Calculate CGPA and GPA
     const processedSemesters = (semesters || []).map(semester => {
       const passedCourses = semester.courses.filter(course => course.grade !== 'U');
       const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
@@ -287,72 +200,124 @@ export const saveStudentData = async (req, res) => {
       };
     });
 
-    const current_cgpa = parseFloat(calculateCGPA(processedSemesters).toFixed(2));
+    const allCourses = processedSemesters.flatMap(sem => sem.courses || []);
+    const passedCourses = allCourses.filter(course => course.grade !== 'U');
+    const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
+    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
+    const current_cgpa = totalCredits > 0 ? parseFloat((totalGradePoints / totalCredits).toFixed(2)) : 0;
 
-    let student;
-    
-    // Handle users from User collection
-    if (req.student.isFromUserCollection) {
-      // Find existing Student record by userId
-      student = await Student.findOne({ userId: req.student._id });
-      
-      if (student) {
-        // Update existing Student record
-        student.registration_no = registration_no;
-        student.name = name;
-        student.current_cgpa = current_cgpa;
-        student.semesters = processedSemesters;
-        student.updatedAt = Date.now();
-        await student.save();
-      } else {
-        // Create new Student record linked to User
-        student = new Student({
-          registration_no,
-          name,
-          password: 'temp_password',
-          current_cgpa,
-          semesters: processedSemesters,
-          userId: req.student._id // Link to User collection
-        });
-        await student.save();
-      }
-    } else {
-      // Handle users from Student collection
-      student = await Student.findByIdAndUpdate(
-        req.student._id,
-        {
-          registration_no,
-          name,
-          current_cgpa,
-          semesters: processedSemesters
-        },
-        { new: true, runValidators: true }
-      ).select('-password');
-    }
+    // Create new student record
+    const studentData = new Student({
+      registration_no,
+      name,
+      password: 'temp_password', // Not used for login
+      current_cgpa,
+      semesters: processedSemesters,
+      userId: req.user._id
+    });
 
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: 'Student not found'
-      });
-    }
+    await studentData.save();
 
-    // Remove password from response
-    const studentData = student.toObject();
-    delete studentData.password;
-
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: 'Student data saved successfully',
-      data: studentData
+      message: 'Student data created successfully',
+      data: {
+        registration_no: studentData.registration_no,
+        name: studentData.name,
+        current_cgpa: studentData.current_cgpa,
+        semesters: studentData.semesters
+      }
     });
   } catch (error) {
-    console.error('Error saving student data:', error);
+    console.error('Error adding student scores:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to save student data',
+      message: 'Failed to add student data',
       error: error.message
     });
   }
 };
+
+// Update student scores - Update existing student data
+export const updateStudentScores = async (req, res) => {
+  try {
+    const { registration_no, name, semesters } = req.body;
+
+    console.log('Updating student scores for user:', req.user._id);
+    
+    // Check if user is a student
+    if (req.user.role !== 'student') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. Only students can access this endpoint.'
+      });
+    }
+
+    if (!registration_no || !name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registration number and name are required'
+      });
+    }
+
+    // Find existing student data
+    let studentData = await Student.findOne({ userId: req.user._id });
+    
+    if (!studentData) {
+      // Create new if doesn't exist
+      return addStudentScores(req, res);
+    }
+
+    // Calculate CGPA and GPA
+    const processedSemesters = (semesters || []).map(semester => {
+      const passedCourses = semester.courses.filter(course => course.grade !== 'U');
+      const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
+      const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
+      const gpa = totalCredits > 0 ? (totalGradePoints / totalCredits) : 0;
+      
+      return {
+        ...semester,
+        gpa: parseFloat(gpa.toFixed(2))
+      };
+    });
+
+    const allCourses = processedSemesters.flatMap(sem => sem.courses || []);
+    const passedCourses = allCourses.filter(course => course.grade !== 'U');
+    const totalCredits = passedCourses.reduce((sum, course) => sum + course.credits, 0);
+    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (course.credits * course.grade_points), 0);
+    const current_cgpa = totalCredits > 0 ? parseFloat((totalGradePoints / totalCredits).toFixed(2)) : 0;
+
+    // Update student data
+    studentData.registration_no = registration_no;
+    studentData.name = name;
+    studentData.current_cgpa = current_cgpa;
+    studentData.semesters = processedSemesters;
+    studentData.updatedAt = Date.now();
+
+    await studentData.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Student data updated successfully',
+      data: {
+        registration_no: studentData.registration_no,
+        name: studentData.name,
+        current_cgpa: studentData.current_cgpa,
+        semesters: studentData.semesters
+      }
+    });
+  } catch (error) {
+    console.error('Error updating student scores:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update student data',
+      error: error.message
+    });
+  }
+};
+
+// Legacy functions for backward compatibility
+export const getStudentData = getStudentScores;
+export const saveStudentData = updateStudentScores;
+export const updateStudentData = updateStudentScores;
 
