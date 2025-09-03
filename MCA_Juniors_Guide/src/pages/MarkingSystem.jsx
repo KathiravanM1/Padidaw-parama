@@ -134,11 +134,16 @@ const AnnaUniversityMarkingSystem = () => {
     if (!isAuthenticated || !regNo || !name) return;
     
     try {
+      // Save all semesters that have courses, not just selected ones
+      const allSemestersWithCourses = Object.keys(allSemesterCourses)
+        .filter(sem => allSemesterCourses[sem] && allSemesterCourses[sem].length > 0)
+        .map(sem => parseInt(sem));
+      
       const studentData = {
         registration_no: regNo,
         name: name,
-        semesters: selectedSemesters.map(sem => ({
-          semester_number: parseInt(sem),
+        semesters: allSemestersWithCourses.map(sem => ({
+          semester_number: sem,
           courses: (allSemesterCourses[sem] || []).map(course => ({
             course_code: course.code || `COURSE_${course.id}`,
             course_name: course.name,
@@ -194,12 +199,7 @@ const AnnaUniversityMarkingSystem = () => {
   const handleSemesterCheck = useCallback((semester) => {
     if (selectedSemesters.includes(semester)) {
       setSelectedSemesters(prev => prev.filter(s => s !== semester).sort());
-      // Remove semester from courses when unchecked
-      setAllSemesterCourses(prev => {
-        const updated = { ...prev };
-        delete updated[semester];
-        return updated;
-      });
+      // Don't remove semester data - just exclude from CGPA calculation
     } else {
       setSelectedSemesters(prev => [...prev, semester].sort());
       // Initialize empty courses if not already in state
@@ -754,22 +754,28 @@ const AnnaUniversityMarkingSystem = () => {
               2. Select Semesters for CGPA
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              {[1, 2, 3, 4].map(sem => (
-                <div key={sem} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id={`sem-check-${sem}`}
-                    checked={selectedSemesters.includes(sem)}
-                    onChange={() => handleSemesterCheck(sem)}
-                    disabled={!allSemesterCourses[sem] || allSemesterCourses[sem].length === 0}
-                    className="h-4 w-4 sm:h-5 sm:w-5 rounded form-checkbox"
-                    style={{ borderColor: '#16A085', color: '#16A085' }}
-                  />
-                  <label htmlFor={`sem-check-${sem}`} className={`ml-2 text-sm sm:text-base lg:text-lg font-bold ${!allSemesterCourses[sem] || allSemesterCourses[sem].length === 0 ? 'text-gray-400' : 'text-gray-800'}`}>
-                    Semester {sem} {allSemesterCourses[sem] && allSemesterCourses[sem].length > 0 && `(${allSemesterCourses[sem].length} subjects)`}
-                  </label>
-                </div>
-              ))}
+              {[1, 2, 3, 4].map(sem => {
+                const hasCourses = allSemesterCourses[sem] && allSemesterCourses[sem].length > 0;
+                const isSelected = selectedSemesters.includes(sem);
+                
+                return (
+                  <div key={sem} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`sem-check-${sem}`}
+                      checked={isSelected}
+                      onChange={() => handleSemesterCheck(sem)}
+                      disabled={!hasCourses}
+                      className="h-4 w-4 sm:h-5 sm:w-5 rounded form-checkbox"
+                      style={{ borderColor: '#16A085', color: '#16A085' }}
+                    />
+                    <label htmlFor={`sem-check-${sem}`} className={`ml-2 text-sm sm:text-base lg:text-lg font-bold ${!hasCourses ? 'text-gray-400' : 'text-gray-800'}`}>
+                      Semester {sem} {hasCourses && `(${allSemesterCourses[sem].length} subjects)`}
+                      {!isSelected && hasCourses && <span className="text-xs text-gray-500 block">Available to include</span>}
+                    </label>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

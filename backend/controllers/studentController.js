@@ -22,9 +22,13 @@ export const loginStudent = async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is not configured');
+    }
+    
     const token = jwt.sign(
       { userId: student._id, registration_no: student.registration_no },
-      process.env.JWT_SECRET || 'your-secret-key',
+      process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
