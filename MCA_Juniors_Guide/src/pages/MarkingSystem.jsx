@@ -17,7 +17,7 @@ const AnnaUniversityMarkingSystem = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [hasExistingData, setHasExistingData] = useState(false);
-  const [autoSaving, setAutoSaving] = useState(false);
+
 
   const gradeOptions = useMemo(() => [
     { grade: 'O', points: 10, range: '91-100' },
@@ -40,27 +40,7 @@ const AnnaUniversityMarkingSystem = () => {
     }
   }, [isAuthenticated]);
 
-  // Auto-save student info with debouncing
-  useEffect(() => {
-    if (!isAuthenticated || !studentInfo.registration_no || !studentInfo.name) return;
-    
-    const timeoutId = setTimeout(() => {
-      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
-    }, 2000);
-    
-    return () => clearTimeout(timeoutId);
-  }, [studentInfo.registration_no, studentInfo.name, isAuthenticated]);
 
-  // Auto-save course data when courses or semester selection changes
-  useEffect(() => {
-    if (!isAuthenticated || !studentInfo.registration_no || !studentInfo.name) return;
-    
-    const timeoutId = setTimeout(() => {
-      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
-    }, 1000); // Shorter delay for course changes
-    
-    return () => clearTimeout(timeoutId);
-  }, [allSemesterCourses, selectedSemesters, isAuthenticated, studentInfo.registration_no, studentInfo.name]);
 
   const loadStudentData = async () => {
     if (!isAuthenticated) {
@@ -150,12 +130,10 @@ const AnnaUniversityMarkingSystem = () => {
     }
   };
 
-  const saveStudentInfo = async (regNo, name, isAutoSave = false) => {
+  const saveStudentInfo = async (regNo, name) => {
     if (!isAuthenticated || !regNo || !name) return;
     
     try {
-      if (isAutoSave) setAutoSaving(true);
-      
       const studentData = {
         registration_no: regNo,
         name: name,
@@ -174,23 +152,17 @@ const AnnaUniversityMarkingSystem = () => {
       await studentService.saveStudentData(studentData);
       setHasExistingData(true);
       
-      if (!isAutoSave) {
-        const message = hasExistingData ? 'Data updated successfully!' : 'Data saved successfully!';
-        setSuccess(message);
-        setTimeout(() => setSuccess(''), 3000);
-      }
+      const message = hasExistingData ? 'Data updated successfully!' : 'Data saved successfully!';
+      setSuccess(message);
+      setTimeout(() => setSuccess(''), 3000);
       
     } catch (error) {
       console.error('Error saving student data:', error);
-      if (!isAutoSave) {
-        if (error.message.includes('Access denied')) {
-          setError('Access denied. Only students can save data.');
-        } else {
-          setError(error.message || 'Failed to save data');
-        }
+      if (error.message.includes('Access denied')) {
+        setError('Access denied. Only students can save data.');
+      } else {
+        setError(error.message || 'Failed to save data');
       }
-    } finally {
-      if (isAutoSave) setAutoSaving(false);
     }
   };
 
@@ -207,22 +179,17 @@ const AnnaUniversityMarkingSystem = () => {
     
     setSaving(true);
     setError('');
-    await saveStudentInfo(studentInfo.registration_no, studentInfo.name, false);
+    await saveStudentInfo(studentInfo.registration_no, studentInfo.name);
     setSaving(false);
   };
 
   const handleTabClick = useCallback((semester) => {
-    // Auto-save student info before switching tabs
-    if (studentInfo.registration_no && studentInfo.name) {
-      saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
-    }
-    
     setActiveTab(semester);
     // Initialize empty courses if they don't exist yet
     if (!allSemesterCourses[semester]) {
       setAllSemesterCourses(prev => ({ ...prev, [semester]: [] }));
     }
-  }, [allSemesterCourses, studentInfo]);
+  }, [allSemesterCourses]);
 
   const handleSemesterCheck = useCallback((semester) => {
     if (selectedSemesters.includes(semester)) {
@@ -240,14 +207,7 @@ const AnnaUniversityMarkingSystem = () => {
         setAllSemesterCourses(prev => ({ ...prev, [semester]: [] }));
       }
     }
-    
-    // Auto-save after semester selection change
-    if (studentInfo.registration_no && studentInfo.name) {
-      setTimeout(() => {
-        saveStudentInfo(studentInfo.registration_no, studentInfo.name, true);
-      }, 100);
-    }
-  }, [selectedSemesters, allSemesterCourses, studentInfo]);
+  }, [selectedSemesters, allSemesterCourses]);
 
   const updateCourse = useCallback((id, field, value) => {
     setAllSemesterCourses(prev => {
@@ -612,17 +572,12 @@ const AnnaUniversityMarkingSystem = () => {
               </h3>
               {isAuthenticated && (
                 <div className="flex items-center gap-2">
-                  {autoSaving && (
-                    <div className="px-2 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                      Auto-saving...
-                    </div>
-                  )}
                   <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
                     hasExistingData 
                       ? 'bg-blue-100 text-blue-800' 
                       : 'bg-green-100 text-green-800'
                   }`}>
-                    {hasExistingData ? 'Updating Existing Data' : 'Creating New Data'}
+                    {hasExistingData ? 'Existing Data' : 'New Data'}
                   </div>
                 </div>
               )}
@@ -698,7 +653,7 @@ const AnnaUniversityMarkingSystem = () => {
               <h4 className="text-sm sm:text-base lg:text-lg font-bold text-gray-800">Subjects for Semester {activeTab}</h4>
               <div className="flex gap-2">
                 <button
-                  onClick={() => saveStudentInfo(studentInfo.registration_no, studentInfo.name, false)}
+                  onClick={() => saveStudentInfo(studentInfo.registration_no, studentInfo.name)}
                   disabled={!studentInfo.registration_no || !studentInfo.name || saving}
                   className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition-colors text-xs sm:text-sm font-semibold"
                 >
