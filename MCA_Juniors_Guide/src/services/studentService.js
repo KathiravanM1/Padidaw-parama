@@ -65,7 +65,19 @@ export const studentService = {
     
     try {
       console.log('Fetching student data from API...');
+      console.log('Making request to:', `${API_BASE_URL}/students/scores`);
+      
+      // First test if the route is accessible
+      try {
+        const testResponse = await api.get('/students/test');
+        console.log('Test endpoint response:', testResponse.data);
+      } catch (testError) {
+        console.error('Test endpoint failed:', testError.response?.data || testError.message);
+      }
+      
       const response = await api.get('/students/scores');
+      console.log('API Response status:', response.status);
+      console.log('API Response data:', response.data);
       const dbData = response.data.data;
       
       console.log('Received student data:', dbData);

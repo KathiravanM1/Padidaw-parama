@@ -32,4 +32,17 @@ router.post('/scores', authenticate, addStudentScores);
 // PUT /api/students/scores - Update student scores (requires User auth with student role)
 router.put('/scores', authenticate, updateStudentScores);
 
+// Debug endpoint to test if routes are working
+router.get('/test', authenticate, (req, res) => {
+  res.json({
+    success: true,
+    message: 'Student routes are working',
+    user: {
+      id: req.user._id,
+      role: req.user.role,
+      name: `${req.user.firstName} ${req.user.lastName}`.trim()
+    }
+  });
+});
+
 export default router;

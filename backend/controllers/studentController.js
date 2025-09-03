@@ -109,10 +109,11 @@ export const registerStudent = async (req, res) => {
 // Get student scores - Main endpoint for fetching student data
 export const getStudentScores = async (req, res) => {
   try {
-    console.log('Getting student scores for user:', req.user._id);
+    console.log('Getting student scores for user:', req.user._id, 'Role:', req.user.role);
     
     // Check if user is a student
     if (req.user.role !== 'student') {
+      console.log('Access denied - user role is:', req.user.role);
       return res.status(403).json({
         success: false,
         message: 'Access denied. Only students can access this endpoint.'
@@ -121,9 +122,19 @@ export const getStudentScores = async (req, res) => {
 
     // Find existing student data linked to this user
     let studentData = await Student.findOne({ userId: req.user._id }).select('-password');
+    console.log('Student data found:', studentData ? 'Yes' : 'No');
+    
+    if (studentData) {
+      console.log('Student data details:', {
+        registration_no: studentData.registration_no,
+        name: studentData.name,
+        semesters_count: studentData.semesters?.length || 0
+      });
+    }
     
     if (!studentData) {
       // No data exists, return empty structure
+      console.log('No student data found, returning empty structure');
       return res.status(200).json({
         success: true,
         data: {
@@ -136,6 +147,7 @@ export const getStudentScores = async (req, res) => {
       });
     }
 
+    console.log('Returning existing student data');
     res.status(200).json({
       success: true,
       data: {
