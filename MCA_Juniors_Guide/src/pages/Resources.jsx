@@ -71,23 +71,30 @@ const Resources = () => {
   const currentSemester = semesters.find(sem => sem.semId === activeSemester);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-#DDF6D2 to-white ">
+            <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500&family=Space+Grotesk:wght@400;500;700&display=swap');
+          body { font-family: 'Space Grotesk', sans-serif; }
+          .font-serif { font-family: 'Instrument Serif', serif; }
+          .font-space { font-family: 'Space Grotesk', sans-serif; }
+          .font-mono { font-family: 'JetBrains Mono', monospace; }
+      `}</style>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
-        <div className="bg-white rounded-3xl p-8 mb-8 shadow-xl border border-gray-200">
+        <div className="bg-white rounded-3xl p-8 mb-8 shadow-xl border border-gray-200 font-serif">
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-green-100 rounded-2xl">
               <span className="text-4xl">🎓</span>
             </div>
             <div>
-              <h1 className="text-4xl font-medium text-green-800">Academic Resources</h1>
+              <h1 className=" text-4xl font-medium text-green-800">Academic Resources</h1>
               <p className="text-gray-600 mt-2 text-lg">Study materials and question papers</p>
             </div>
           </div>
         </div>
 
         {/* Semester Navigation */}
-        <div className="flex flex-wrap gap-4 mb-8">
+        <div className="flex flex-wrap gap-4 mb-8 font-mono">
           {semesters.map((semester) => (
             <button
               key={semester.semId}
@@ -110,7 +117,7 @@ const Resources = () => {
               <div key={subject.id} className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
                 {/* Subject Header */}
                 <div
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-100"
+                  className="p-6 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-100 font-space"
                   onClick={() => toggleSubject(`${activeSemester}-${subject.id}`)}
                 >
                   <div className="flex items-center justify-between">

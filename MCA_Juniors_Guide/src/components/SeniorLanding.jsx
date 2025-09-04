@@ -101,48 +101,48 @@ export default function SeniorDashboard() {
     {
       id: 'roadmap',
       icon: Rocket,
-      title: 'Technology Roadmaps',
-      description: 'Comprehensive career paths and learning trajectories for modern tech specializations.',
-      longDescription: 'Explore detailed roadmaps covering Full-Stack Development, AI/ML Engineering, Cybersecurity, and emerging technologies. Each roadmap includes skill prerequisites, learning resources, and career progression paths.',
+      title: 'Senior Experience Hub',
+      description: 'Share your journey, insights, and career experiences to guide junior students.',
+      longDescription: 'Post your professional experiences, career transitions, and valuable insights from your journey in the tech industry. Help juniors understand real-world scenarios and career paths through your authentic experiences.',
       isEditable: false,
       features: [
-        'Full-Stack Development pathway with React, Node.js, and cloud technologies',
-        'AI/ML roadmap covering Python, TensorFlow, and data science fundamentals',
-        'Cybersecurity track with ethical hacking and security frameworks',
-        'DevOps and Cloud Computing specialization paths',
-        'Mobile development roadmaps for iOS and Android'
+        'Share your career journey and professional growth stories',
+        'Post insights about different tech roles and company cultures',
+        'Provide guidance on skill development and learning paths',
+        'Share experiences about remote work and team collaboration',
+        'Offer mentorship through your real-world experiences'
       ],
-      action: () => console.log("View Roadmaps")
+      action: () => console.log("View Senior Experiences")
     },
     {
       id: 'project',
       icon: FileCode,
-      title: 'Impactful Project Hub',
-      description: 'Project ideation, development guidance, and showcase management platform.',
-      longDescription: 'Curate innovative project ideas, provide development guidance, and manage the project showcase gallery. Review student submissions and maintain quality standards for the project portfolio.',
+      title: 'Senior Project Showcase',
+      description: 'Share your professional projects and guide students with real-world examples.',
+      longDescription: 'Showcase your professional projects, open-source contributions, and side projects. Provide detailed insights about project development, challenges faced, and solutions implemented to inspire and guide junior developers.',
       isEditable: true,
       features: [
-        'Curate and categorize project ideas by technology stack',
-        'Review and approve student project submissions',
-        'Manage project showcase gallery and featured projects',
-        'Provide development guidelines and best practices',
-        'Track project completion rates and student engagement'
+        'Post your professional and personal projects with detailed explanations',
+        'Share project architecture, tech stack decisions, and implementation details',
+        'Provide insights about project challenges and problem-solving approaches',
+        'Offer guidance on project planning and development best practices',
+        'Showcase open-source contributions and collaborative projects'
       ],
-      action: () => console.log("Manage Project Hub")
+      action: () => console.log("Manage Senior Projects")
     },
     {
       id: 'problemsolving',
       icon: UserCheck,
-      title: 'Post Problems From Experiences',
-      description: 'Company-specific interview Problems, preparation materials, and placement guidance.',
-      longDescription: 'Comprehensive collection of real interview experiences from top companies, including technical questions, HR rounds, and salary negotiations. Regularly updated with fresh insights.',
+      title: 'Problem Solving Challenges',
+      description: 'Share interview problems and challenges you faced during your job search journey.',
+      longDescription: 'Post detailed accounts of interview experiences, technical challenges, and problems you encountered during your job search. Help juniors prepare better by sharing real interview questions and scenarios.',
       isEditable: true,
       features: [
-        'Update company-specific interview experiences',
-        'Manage technical question databases',
-        'Curate salary negotiation tips and strategies',
-        'Organize placement preparation materials',
-        'Track placement success stories and outcomes'
+        'Share detailed interview experiences from various companies',
+        'Post technical problems and coding challenges you faced',
+        'Provide insights about interview processes and company cultures',
+        'Share tips for handling difficult interview situations',
+        'Offer guidance on salary negotiations and job offer evaluations'
       ],
       action: () => console.log("Manage Interview Experiences")
     },
@@ -221,8 +221,8 @@ export default function SeniorDashboard() {
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 font-serif animate-fade-in-up">
               Senior Dashboard
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto font-space leading-relaxed animate-fade-in-up">
-              This portal offers comprehensive view-only access to academic content, projects, and interview experiences.
+            <p className="text-xl sm:text-2xl text-gray-600 max-w-4xl mx-auto mb-12 font-space animate-fade-in-up">
+              Share your experiences, showcase your projects, and help guide the next generation of developers through your journey.
             </p>
           </div>
         </section>
