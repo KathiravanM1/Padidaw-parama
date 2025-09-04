@@ -10,6 +10,7 @@ const seniorNavLinks = [
     { href: "resources", text: "Resources", icon: Upload },
     { href: "project", text: "Projects", icon: FolderOpen },
     { href: "problemsolving", text: "Problem Solving", icon: HelpCircle },
+    { href: "roadmap", text: "Experience", icon: Users },
 ];
 
 const SeniorHeader = () => {
@@ -152,43 +153,6 @@ const SeniorHeader = () => {
     );
 };
 
-const SeniorFooter = () => {
-    return (
-        <motion.footer 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-gray-50 border-t border-gray-200"
-        >
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
-                <div className="flex justify-center gap-6 mb-4">
-                    <motion.a 
-                        href="#" 
-                        whileHover={{ scale: 1.1 }}
-                        className="text-gray-500 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
-                    >
-                        <Twitter className="w-5 h-5" />
-                    </motion.a>
-                    <motion.a 
-                        href="#" 
-                        whileHover={{ scale: 1.1 }}
-                        className="text-gray-500 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
-                    >
-                        <Github className="w-5 h-5" />
-                    </motion.a>
-                    <motion.a 
-                        href="#" 
-                        whileHover={{ scale: 1.1 }}
-                        className="text-gray-500 hover:text-gray-900 transition-colors p-2 rounded-full hover:bg-gray-100"
-                    >
-                        <Linkedin className="w-5 h-5" />
-                    </motion.a>
-                </div>
-                <p className="font-mono text-sm text-gray-500">&copy; {new Date().getFullYear()} Vidivu. All rights reserved.</p>
-            </div>
-        </motion.footer>
-    );
-};
 
 
 export default function SeniorLayout() {

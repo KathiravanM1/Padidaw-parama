@@ -205,6 +205,7 @@ export default function ExperienceForm() {
                 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&family=Space+Grotesk:wght@400;500;700&display=swap');
                 body { font-family: 'Space Grotesk', sans-serif; }
                 .font-serif { font-family: 'Instrument Serif', serif; }
+                .font-space { font-family: 'Space Grotesk', sans-serif; }
             `}</style>
             
             <AnimatePresence>

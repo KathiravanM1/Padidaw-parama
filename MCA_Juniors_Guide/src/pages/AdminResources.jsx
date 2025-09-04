@@ -119,10 +119,6 @@ const AdminResources = () => {
         questionPapers: []
       };
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/semesters/${formData.semester}/subjects`,
-        subjectData
-      );
 
       // Refresh semesters to get updated data
       const updatedSemesters = await getSemesters();
@@ -222,7 +218,7 @@ const handleUpload = async () => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white p-6">
+    <div className="min-h-screen bg-gradient-to-b from-#DDF6D2 to-white p-6">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Upload Academic Resources</h1>
