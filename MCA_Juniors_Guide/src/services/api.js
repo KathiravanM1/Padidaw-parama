@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: API_URL || 'https://padidaw-parama-backend.onrender.com/api',
+  baseURL: API_URL || 'https://api.vidivu.tech/api',
   timeout: 30000, // 30 seconds timeout for file uploads
   headers: {
     'Content-Type': 'application/json',

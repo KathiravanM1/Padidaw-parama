@@ -14,7 +14,7 @@ const Resources = () => {
 
   const fetchSemesters = async () => {
     try {
-      const response = await axios.get('https://padidaw-parama-backend.onrender.com/api/semesters');
+      const response = await axios.get('https://api.vidivu.tech/api/semesters');
       setSemesters(response.data);
       setLoading(false);
     } catch (error) {

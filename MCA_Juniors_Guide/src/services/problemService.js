@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
+const API_BASE_URL = 'https://api.vidivu.tech/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

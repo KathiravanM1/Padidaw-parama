@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
+const API_BASE_URL = 'https://api.vidivu.tech/api';
 
 const ApiTest = () => {
   const [results, setResults] = useState({});

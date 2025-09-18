@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://padidaw-parama-backend.onrender.com/api';
+const API_BASE_URL = 'https://api.vidivu.tech/api';
 const STORAGE_KEY = 'student_marking_data';
 
 const api = axios.create({
