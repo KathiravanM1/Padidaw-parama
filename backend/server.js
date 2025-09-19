@@ -13,6 +13,8 @@ import studentRoutes from './routes/studentRoutes.js';
 import seniorRoadmapRoutes from './routes/seniorRoadmapRoutes.js';
 import companyRoutes from './routes/companyRoutes.js';
 import adminDeleteRouter from './routes/adminDeleteRoutes.js';
+import cookieParser from "cookie-parser";
+import attendanceRoutes from "./routes/attendanceRoutes.js"
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // Connect to database
 connectDB();
+app.use(cookieParser());
+
 
 // Debug middleware
 app.use((req, res, next) => {
@@ -50,6 +54,7 @@ app.use('/api/roadmaps', seniorRoadmapRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/admin/delete', adminDeleteRouter);
 app.use('/api', healthRoutes);
+app.use("/api/attendance", attendanceRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the MCA Guide Project API', status: 'running' });

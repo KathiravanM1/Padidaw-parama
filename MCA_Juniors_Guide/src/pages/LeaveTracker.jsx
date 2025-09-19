@@ -2,8 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, BookOpen, AlertTriangle, Plus, CheckCircle, XCircle, Trash2, Edit, X, LogOut } from 'lucide-react';
 import LoginPage from '../components/LoginPage';
-import { getCurrentUser, logoutUser } from '../utils/sessionAuth';
-import { getCurrentUserData, addSubject, markAttendance, deleteSubject, updateAttendance, deleteAttendance, getMaxLeaveHours } from '../utils/attendanceDB';
+import { getCurrentUser, logoutUser, getCurrentUserData } from '../utils/sessionAuth';
+import { addSubject, markAttendance, deleteSubject, updateAttendance, deleteAttendance, getMaxLeaveHours, refreshUserData } from '../utils/attendanceDB';
 
 
 const EditAbsenceModal = ({ entry, onSave, onClose }) => {
@@ -97,22 +97,30 @@ export default function AttendanceTracker() {
         }
     }, []);
 
-    const refreshData = () => {
-        const userData = getCurrentUserData();
-        if (userData) {
-            setTrackedSubjects(Object.values(userData.subjects));
-            setAttendanceHistory(userData.attendanceHistory);
+    const refreshData = async () => {
+        try {
+            const userData = await refreshUserData();
+            if (userData) {
+                setTrackedSubjects(Object.values(userData.subjects));
+                setAttendanceHistory(userData.attendanceHistory);
+            }
+        } catch (error) {
+            console.error('Failed to refresh data:', error);
         }
     };
 
-    const handleLogin = (userDoc) => {
+    const handleLogin = async (userDoc) => {
         setCurrentUser(userDoc);
         setIsLoggedIn(true);
-        refreshData();
+        await refreshData();
     };
 
-    const handleLogout = () => {
-        logoutUser();
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
         setIsLoggedIn(false);
         setCurrentUser(null);
         setTrackedSubjects([]);
@@ -132,46 +140,50 @@ export default function AttendanceTracker() {
         }
     };
 
-    const handleMarkAbsence = () => {
+    const handleMarkAbsence = async () => {
         const hours = parseInt(hoursAbsent);
         let subjectId = selectedSubjectId;
 
-        if (isAddingNew) {
-            if (!newSubjectName.trim() || !newSubjectCredits || !hoursAbsent) {
-                alert('Please fill in all new subject details and the hours.');
+        try {
+            if (isAddingNew) {
+                if (!newSubjectName.trim() || !newSubjectCredits || !hoursAbsent) {
+                    alert('Please fill in all new subject details and the hours.');
+                    return;
+                }
+                
+                const existingSubject = trackedSubjects.find(s => s.name.toLowerCase() === newSubjectName.trim().toLowerCase());
+                if (existingSubject) {
+                    alert('A subject with this name already exists. Please select it from the dropdown.');
+                    return;
+                }
+
+                const newSubject = await addSubject({
+                    name: newSubjectName.trim(),
+                    credits: parseFloat(newSubjectCredits)
+                });
+                
+                if (newSubject) {
+                    subjectId = newSubject.id;
+                }
+            }
+
+            if (!subjectId) {
+                alert('Please select a subject.');
                 return;
             }
-            
-            const existingSubject = trackedSubjects.find(s => s.name.toLowerCase() === newSubjectName.trim().toLowerCase());
-            if (existingSubject) {
-                alert('A subject with this name already exists. Please select it from the dropdown.');
-                return;
-            }
 
-            const newSubject = addSubject({
-                name: newSubjectName.trim(),
-                credits: parseFloat(newSubjectCredits)
-            });
-            
-            if (newSubject) {
-                subjectId = newSubject.id;
-            }
+            await markAttendance(subjectId, hours);
+            await refreshData();
+
+            // Reset form
+            setHoursAbsent('1');
+            setSelectedSubjectId('');
+            setIsAddingNew(false);
+            setNewSubjectName('');
+            setNewSubjectCredits('');
+        } catch (error) {
+            alert('Failed to mark attendance: ' + error.message);
         }
-
-        if (!subjectId) {
-            alert('Please select a subject.');
-            return;
-        }
-
-        markAttendance(subjectId, hours);
-        refreshData();
-
-        // Reset form
-        setHoursAbsent('1');
-        setSelectedSubjectId('');
-        setIsAddingNew(false);
-        setNewSubjectName('');
-        setNewSubjectCredits('');
     };
     
     // Duplicate handleDeleteSubject removed to fix redeclaration error.
@@ -180,26 +192,38 @@ export default function AttendanceTracker() {
 
     // --- Memoized Calculations for Performance ---
 
-    const handleDeleteSubject = (subjectId) => {
+    const handleDeleteSubject = async (subjectId) => {
         if (window.confirm('Are you sure you want to delete this subject and all its records?')) {
-            deleteSubject(subjectId);
-            refreshData();
+            try {
+                await deleteSubject(subjectId);
+                await refreshData();
+            } catch (error) {
+                alert('Failed to delete subject: ' + error.message);
+            }
         }
     };
 
-    const handleDeleteHistoryEntry = (entryId) => {
-        deleteAttendance(entryId);
-        refreshData();
+    const handleDeleteHistoryEntry = async (entryId) => {
+        try {
+            await deleteAttendance(entryId);
+            await refreshData();
+        } catch (error) {
+            alert('Failed to delete attendance: ' + error.message);
+        }
     };
 
-    const handleUpdateHistoryEntry = (entryId, newHours) => {
+    const handleUpdateHistoryEntry = async (entryId, newHours) => {
         if (isNaN(newHours) || newHours < 1) {
             alert('Please enter a valid number of hours (at least 1).');
             return;
         }
-        updateAttendance(entryId, newHours);
-        refreshData();
-        setEditingEntry(null);
+        try {
+            await updateAttendance(entryId, newHours);
+            await refreshData();
+            setEditingEntry(null);
+        } catch (error) {
+            alert('Failed to update attendance: ' + error.message);
+        }
     };
 
     
@@ -243,7 +267,7 @@ export default function AttendanceTracker() {
                 >
                     <button
                         onClick={handleLogout}
-                        className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold text-sm sm:text-base"
+                        className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center  gap-1 sm:gap-2 px-2 py-1 sm:px-4 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-semibold text-sm sm:text-base"
                     >
                         <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="hidden sm:inline">Logout</span>

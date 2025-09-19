@@ -127,7 +127,7 @@ const StudentHeader = () => {
                                         key={link.text}
                                         to={`/student/${link.href}`}
                                         onClick={() => setIsOpen(false)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                                        className={`flex items-center gap-3 px-4 py-5 rounded-lg transition-all duration-200 ${
                                             isActive(link.href)
                                                 ? 'bg-gray-100 text-gray-900 font-medium'
                                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -272,7 +272,7 @@ export default function StudentLayout() {
                 </div>
             </main>
 
-            {/* <StudentFooter /> */}
+            <StudentFooter />
             
             {/* Scroll to Top Button */}
             <AnimatePresence>

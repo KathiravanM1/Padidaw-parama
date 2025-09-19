@@ -34,6 +34,8 @@ const cardVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 
 const errorVariants = {
   hidden: { opacity: 0, y: -10 },
@@ -69,7 +71,7 @@ export default function ExperienceForm() {
 
     const fetchCompanies = async () => {
         try {
-            const response = await fetch('https://api.vidivu.tech/api/companies');
+            const response = await fetch(API_BASE_URL+'/companies');
             const result = await response.json();
             if (result.success) {
                 setCompanies(result.data);
@@ -83,7 +85,7 @@ export default function ExperienceForm() {
         if (!newCompanyName.trim()) return;
         
         try {
-            const response = await fetch('https://api.vidivu.tech/api/companies', {
+            const response = await fetch(API_BASE_URL+'/companies', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: newCompanyName.trim() })
@@ -169,7 +171,7 @@ export default function ExperienceForm() {
             submitData.append('resume', formData.resume);
 
             // Submit to backend
-            const response = await fetch('https://api.vidivu.tech/api/roadmaps/submit', {
+            const response = await fetch(API_BASE_URL+'/roadmaps/submit', {
                 method: 'POST',
                 body: submitData,
             });

@@ -9,21 +9,25 @@ const useTodaysTopic = () => {
     const [loading, setLoading] = useState(true);
 
     const fetchDailyTopic = async () => {
-        const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
-        const storyIds = await response.json();
-        
-        const randomStoryId = storyIds[Math.floor(Math.random() * Math.min(10, storyIds.length))];
-        const storyResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${randomStoryId}.json`);
-        const story = await storyResponse.json();
-        
-        return {
-            title: story.title,
-            description: story.text || 'Discover the latest in technology and innovation. Click the link below to read more about this trending topic.',
-            links: [
-                { name: 'Read Full Article', url: story.url || `https://news.ycombinator.com/item?id=${story.id}` },
-                { name: 'HackerNews Discussion', url: `https://news.ycombinator.com/item?id=${story.id}` }
-            ]
-        };
+        try{
+            const response = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+            const storyIds = await response.json();
+            
+            const randomStoryId = storyIds[Math.floor(Math.random() * Math.min(10, storyIds.length))];
+            const storyResponse = await fetch(`https://hacker-news.firebaseio.com/v0/item/${randomStoryId}.json`);
+            const story = await storyResponse.json();
+            
+            return {
+                title: story.title,
+                description: story.text || 'Discover the latest in technology and innovation. Click the link below to read more about this trending topic.',
+                links: [
+                    { name: 'Read Full Article', url: story.url || `https://news.ycombinator.com/item?id=${story.id}` },
+                    { name: 'HackerNews Discussion', url: `https://news.ycombinator.com/item?id=${story.id}` }
+                ]
+            };
+        }catch(err){
+            console.log(err);
+        }
     };
 
     useEffect(() => {
@@ -94,19 +98,19 @@ const useDashboardFeatures = () => useMemo(() => [
       imageUrl: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=800&auto=format&fit=crop',
       buttonText: 'Gain Insights',
     },
-    { 
-      id: 'guide', 
-      title: 'Guidance', 
-      description: 'Connect with mentors and guides.',
-      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop',
-      buttonText: 'Get Support',
-    },
+    // { 
+    //   id: 'guide', 
+    //   title: 'Guidance', 
+    //   description: 'Connect with mentors and guides.',
+    //   imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop',
+    //   buttonText: 'Get Support',
+    // },
     { 
       id: 'leavetracker', 
       title: 'Leave Tracker', 
       description: 'Manage your attendance and leave.',
-      imageUrl: 'https://images.unsplash.com/photo-1554236376-3b214932856c?q=80&w=800&auto=format&fit=crop',
-      buttonText: 'Track Your Time',
+      imageUrl: 'https://ik.imagekit.io/HoneyJoe/aerial-view-doctor-writing-patient-daily-report-checklist.jpg?updatedAt=1758299821982',
+      buttonText: 'Track Your Time Left',
     },
 ], []);
 
@@ -146,13 +150,13 @@ const FeatureCard = ({ feature }) => {
             <img
                 src={feature.imageUrl}
                 alt={feature.title}
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                className="absolute bg-[#000000b7] inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/600x400/ef4444/ffffff?text=Error'; }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-#DDF6D2 via-#DDF6D2 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t   to-transparent" />
             <div className="relative h-full flex flex-col justify-end p-3 sm:p-4 lg:p-6 text-white">
                 <h3 className="font-space font-bold text-lg sm:text-xl lg:text-2xl">
-                    {feature.title}
+                    {feature.title} 
                 </h3>
                 <p className="font-inter text-xs sm:text-sm mt-1 opacity-90">
                     {feature.description}

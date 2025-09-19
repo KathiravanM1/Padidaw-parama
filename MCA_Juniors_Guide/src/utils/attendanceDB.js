@@ -1,4 +1,7 @@
-import { getCurrentUser, getUserDocument, updateUserDocument } from './sessionAuth';
+import { attendanceAPI } from './api';
+import { getCurrentUserData } from './sessionAuth';
+
+let userData = null;
 
 const getMaxLeaveHours = (credits) => {
   const creditValue = parseFloat(credits);
@@ -9,108 +12,40 @@ const getMaxLeaveHours = (credits) => {
   return Math.floor(creditValue * 3);
 };
 
-export const getCurrentUserData = () => {
-  const rollNumber = getCurrentUser();
-  return rollNumber ? getUserDocument(rollNumber) : null;
+export const refreshUserData = async () => {
+  userData = await attendanceAPI.getMyData();
+  return userData;
 };
 
-export const addSubject = (subjectData) => {
-  const rollNumber = getCurrentUser();
-  if (!rollNumber) return null;
-  
-  const userDoc = getUserDocument(rollNumber);
-  if (!userDoc) return null;
-  
-  const subjectId = `${rollNumber}_${Date.now()}`;
-  const subject = {
-    id: subjectId,
-    name: subjectData.name,
-    credits: subjectData.credits,
-    hoursAbsent: 0,
-    createdAt: new Date().toISOString()
-  };
-  
-  userDoc.subjects[subjectId] = subject;
-  updateUserDocument(rollNumber, userDoc);
-  return subject;
+
+
+export const addSubject = async (subjectData) => {
+  const subjectId = `${userData.rollNumber}_${Date.now()}`;
+  await attendanceAPI.addSubject(subjectId, subjectData.name, subjectData.credits);
+  await refreshUserData();
+  return { id: subjectId, ...subjectData };
 };
 
-export const markAttendance = (subjectId, hours) => {
-  const rollNumber = getCurrentUser();
-  if (!rollNumber) return null;
-  
-  const userDoc = getUserDocument(rollNumber);
-  if (!userDoc || !userDoc.subjects[subjectId]) return null;
-  
-  userDoc.subjects[subjectId].hoursAbsent += hours;
-  
-  const historyEntry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    subjectId,
-    subjectName: userDoc.subjects[subjectId].name,
-    hours
-  };
-  
-  userDoc.attendanceHistory.unshift(historyEntry);
-  updateUserDocument(rollNumber, userDoc);
-  return historyEntry;
+export const markAttendance = async (subjectId, hours) => {
+  await attendanceAPI.markAttendance(subjectId, 'absent', hours);
+  await refreshUserData();
 };
 
-export const deleteSubject = (subjectId) => {
-  const rollNumber = getCurrentUser();
-  if (!rollNumber) return false;
-  
-  const userDoc = getUserDocument(rollNumber);
-  if (!userDoc) return false;
-  
-  const subjectName = userDoc.subjects[subjectId]?.name;
-  delete userDoc.subjects[subjectId];
-  userDoc.attendanceHistory = userDoc.attendanceHistory.filter(h => h.subjectName !== subjectName);
-  
-  updateUserDocument(rollNumber, userDoc);
+export const deleteSubject = async (subjectId) => {
+  await attendanceAPI.deleteSubject(subjectId);
+  await refreshUserData();
   return true;
 };
 
-export const updateAttendance = (entryId, newHours) => {
-  const rollNumber = getCurrentUser();
-  if (!rollNumber) return false;
-  
-  const userDoc = getUserDocument(rollNumber);
-  if (!userDoc) return false;
-  
-  const entry = userDoc.attendanceHistory.find(h => h.id === entryId);
-  if (!entry) return false;
-  
-  const hourDifference = newHours - entry.hours;
-  if (userDoc.subjects[entry.subjectId]) {
-    userDoc.subjects[entry.subjectId].hoursAbsent += hourDifference;
-  }
-  
-  entry.hours = newHours;
-  updateUserDocument(rollNumber, userDoc);
+export const updateAttendance = async (entryId, newHours) => {
+  await attendanceAPI.updateAttendance(entryId, newHours);
+  await refreshUserData();
   return true;
 };
 
-export const deleteAttendance = (entryId) => {
-  const rollNumber = getCurrentUser();
-  if (!rollNumber) return false;
-  
-  const userDoc = getUserDocument(rollNumber);
-  if (!userDoc) return false;
-  
-  const entry = userDoc.attendanceHistory.find(h => h.id === entryId);
-  if (!entry) return false;
-  
-  if (userDoc.subjects[entry.subjectId]) {
-    userDoc.subjects[entry.subjectId].hoursAbsent -= entry.hours;
-    if (userDoc.subjects[entry.subjectId].hoursAbsent <= 0) {
-      delete userDoc.subjects[entry.subjectId];
-    }
-  }
-  
-  userDoc.attendanceHistory = userDoc.attendanceHistory.filter(h => h.id !== entryId);
-  updateUserDocument(rollNumber, userDoc);
+export const deleteAttendance = async (entryId) => {
+  await attendanceAPI.deleteAttendance(entryId);
+  await refreshUserData();
   return true;
 };
 
