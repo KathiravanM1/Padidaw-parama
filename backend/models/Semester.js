@@ -18,7 +18,7 @@ const QuestionPaperSchema = new mongoose.Schema({
 });
 
 const SubjectSchema = new mongoose.Schema({
-  id: { type: Number, required: true },
+  id: { type: Number },
   name: { type: String, required: true },
   code: { type: String, required: true },
   materials: [MaterialSchema],
