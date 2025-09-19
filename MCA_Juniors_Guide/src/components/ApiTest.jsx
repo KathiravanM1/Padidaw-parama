@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://api.vidivu.tech/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const ApiTest = () => {
   const [results, setResults] = useState({});

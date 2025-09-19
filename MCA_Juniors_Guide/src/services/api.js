@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_URL = import.meta.env.VITE_API_URL;
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: API_URL || 'https://api.vidivu.tech/api',
+  baseURL: API_URL || 'http://localhost:5000/api',
   timeout: 30000, // 30 seconds timeout for file uploads
   headers: {
     'Content-Type': 'application/json',
@@ -124,6 +124,14 @@ export const getSemesters = async () => {
   } catch (error) {
     throw new Error('Failed to fetch semesters');
   }
+};
+
+export const addSubject = async (semId, subjectData) => {
+  const response = await axios.post(
+    `${import.meta.env.VITE_API_URL}/semesters/${semId}/subjects`,
+    subjectData // ✅ send object directly
+  );
+  return response.data;
 };
 
 export default api;

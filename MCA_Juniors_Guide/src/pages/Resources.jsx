@@ -7,6 +7,8 @@ const Resources = () => {
   const [expandedSubjects, setExpandedSubjects] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
+
 
   useEffect(() => {
     fetchSemesters();
@@ -14,7 +16,7 @@ const Resources = () => {
 
   const fetchSemesters = async () => {
     try {
-      const response = await axios.get('https://api.vidivu.tech/api/semesters');
+      const response = await axios.get(API_BASE_URL+'/semesters');
       setSemesters(response.data);
       setLoading(false);
     } catch (error) {
@@ -82,12 +84,12 @@ const Resources = () => {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header */}
         <div className="bg-white rounded-3xl p-8 mb-8 shadow-xl border border-gray-200 font-serif">
-          <div className="flex items-center gap-4 mb-4">
+          <div className="flex items-center gap-4 mb-4 flex-wrap justify-center lg:justify-start">
             <div className="p-3 bg-green-100 rounded-2xl">
               <span className="text-4xl">🎓</span>
             </div>
             <div>
-              <h1 className=" text-4xl font-medium text-green-800">Academic Resources</h1>
+              <h1 className=" text-4xl font-medium text-green-800 text-center lg:text-start">Academic Resources</h1>
               <p className="text-gray-600 mt-2 text-lg">Study materials and question papers</p>
             </div>
           </div>
@@ -120,7 +122,7 @@ const Resources = () => {
                   className="p-6 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-100 font-space"
                   onClick={() => toggleSubject(`${activeSemester}-${subject.id}`)}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between flex-wrap gap-5">
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-green-100 rounded-xl">
                         <span className="text-2xl">📚</span>

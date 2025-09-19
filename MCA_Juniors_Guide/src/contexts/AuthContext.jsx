@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  const API_BASE_URL = 'https://api.vidivu.tech/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (token) {

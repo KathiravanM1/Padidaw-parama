@@ -55,8 +55,9 @@ function App() {
             <Route path="guide" element={<Scholarship/>} />
             <Route path="problemsolving" element={<ProblemSolvingPage />} />
             <Route path="projects" element={<Projects/>} />
-            <Route path="leavetracker" element={<AttendanceTracker/>} />
+            <Route path="login/leavetracker" element={<AttendanceTracker/>} />
             <Route path="roadmap" element={<Roadmap/>} />
+            <Route path="leavetracker" element={<AttendanceTracker/>}></Route>
         </Route>
         <Route path="admin" element={
           <ProtectedRoute allowedRoles={['admin']}>

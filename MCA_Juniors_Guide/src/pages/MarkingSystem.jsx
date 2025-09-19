@@ -510,7 +510,7 @@ const AnnaUniversityMarkingSystem = () => {
                 <tr style={{ backgroundColor: '#ECFAE5' }}>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Letter Grade</th>
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Grade Points</th>
-                  <th className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Marks Range</th>
+                  {/* <th className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Marks Range</th> */}
                   <th className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Performance</th>
                 </tr>
               </thead>
@@ -526,9 +526,9 @@ const AnnaUniversityMarkingSystem = () => {
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 font-semibold text-center text-xs sm:text-sm">
                       {grade.points}
                     </td>
-                    <td className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 font-mono text-xs sm:text-sm">
+                    {/* <td className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 font-mono text-xs sm:text-sm">
                       {grade.range}
-                    </td>
+                    </td> */}
                     <td className="border border-gray-300 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">
                       {grade.grade === 'O' && 'Outstanding'}
                       {grade.grade === 'A+' && 'Excellent'}
