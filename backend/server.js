@@ -38,10 +38,10 @@ app.use(cookieParser());
 
 
 // Debug middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`, req.body);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(`${req.method} ${req.path}`, req.body);
+//   next();
+// });
 
 // Routes
 app.use('/api/auth', authRoutes);

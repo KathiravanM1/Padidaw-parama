@@ -4,7 +4,7 @@ import { generateToken } from '../utils/jwt.js';
 
 export const register = async (req, res) => {
   try {
-    console.log('Register request body:', req.body);
+    // console.log('Register request body:', req.body);
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

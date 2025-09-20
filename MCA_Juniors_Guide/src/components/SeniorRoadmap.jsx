@@ -111,7 +111,7 @@ export default function ExperienceForm() {
             formData.linkedin.trim() &&
             /^(https?:\/\/)?(www\.)?linkedin\.com\/in\/[a-zA-Z0-9-]+\/?$/.test(formData.linkedin) &&
             formData.github.trim() &&
-            /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9-]+\/?$/.test(formData.github) &&
+            /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9-]+\/?$/.test(formData.github)&&
             formData.domain &&
             formData.technologies.trim() &&
             formData.preparation.trim() &&

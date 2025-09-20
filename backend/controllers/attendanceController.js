@@ -47,7 +47,7 @@ export const loginAttendance = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // only over HTTPS in prod
-      sameSite: "strict",
+      sameSite: "None",
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -214,6 +214,6 @@ export const deleteSubject = async (req, res) => {
 };
 
 export const logoutAttendance = (req, res) => {
-  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  res.clearCookie("token", { httpOnly: true, sameSite: "None" });
   res.json({ message: "Logged out successfully" });
 };
