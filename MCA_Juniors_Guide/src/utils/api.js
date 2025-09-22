@@ -18,53 +18,37 @@ const apiCall = async (endpoint, options = {}) => {
   return response.json();
 };
 
-export const authAPI = {
-  register: (userData) =>
-    apiCall('/register', {
-      method: 'POST',
-      body: JSON.stringify(userData),
-    }),
-
-  login: (email, password) => 
-    apiCall('/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    }),
-
-  logout: () => 
-    apiCall('/logout', { method: 'POST' }),
-};
-
 export const attendanceAPI = {
-  getMyData: () => apiCall('/attendance/me'),
+  getUserByRollNumber: (rollNumber) => 
+    apiCall(`/user/${rollNumber}`, { method: 'GET' }),
 
-  addSubject: (id, name, credits) =>
+  addSubject: (id, name, credits, rollNumber) =>
     apiCall('/subject', {
       method: 'POST',
-      body: JSON.stringify({ id, name, credits }),
+      body: JSON.stringify({ id, name, credits, rollNumber }),
     }),
 
-  deleteSubject: (subjectId) =>
+  deleteSubject: (subjectId, rollNumber) =>
     apiCall('/subject', {
       method: 'DELETE',
-      body: JSON.stringify({ subjectId }),
+      body: JSON.stringify({ subjectId, rollNumber }),
     }),
 
-  markAttendance: (subjectId, status, hours) =>
+  markAttendance: (subjectId, status, hours, rollNumber) =>
     apiCall('/attendance', {
       method: 'POST',
-      body: JSON.stringify({ subjectId, status, hours }),
+      body: JSON.stringify({ subjectId, status, hours, rollNumber }),
     }),
 
-  updateAttendance: (attendanceId, newHours) =>
+  updateAttendance: (attendanceId, newHours, rollNumber) =>
     apiCall('/update-status', {
       method: 'PUT',
-      body: JSON.stringify({ attendanceId, newHours }),
+      body: JSON.stringify({ attendanceId, newHours, rollNumber }),
     }),
 
-  deleteAttendance: (attendanceId) =>
+  deleteAttendance: (attendanceId, rollNumber) =>
     apiCall('/attendance', {
       method: 'DELETE',
-      body: JSON.stringify({ attendanceId }),
+      body: JSON.stringify({ attendanceId, rollNumber }),
     }),
 };

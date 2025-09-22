@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, BookOpen, AlertTriangle, Plus, CheckCircle, XCircle, Trash2, Edit, X, LogOut } from 'lucide-react';
-import LoginPage from '../components/LoginPage';
-import { getCurrentUser, logoutUser, getCurrentUserData } from '../utils/sessionAuth';
+import { getCurrentUser, logoutUser, getCurrentUserData, setUserByRollNumber } from '../utils/sessionAuth';
 import { addSubject, markAttendance, deleteSubject, updateAttendance, deleteAttendance, getMaxLeaveHours, refreshUserData } from '../utils/attendanceDB';
 
 
@@ -63,10 +62,9 @@ const EditAbsenceModal = ({ entry, onSave, onClose }) => {
 
 
 // --- MAIN COMPONENT ---
-export default function AttendanceTracker() {
-    // Authentication state
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+export default function AttendanceTracker({onLogin}) {
     const [currentUser, setCurrentUser] = useState(null);
+    // currentUser = onLogin;
     
     // State for subjects the user is actively tracking (initially empty)
     const [trackedSubjects, setTrackedSubjects] = useState([]);
@@ -86,16 +84,18 @@ export default function AttendanceTracker() {
 
     // Check session on mount
     useEffect(() => {
-        const rollNumber = getCurrentUser();
-        if (rollNumber) {
-            const userData = getCurrentUserData();
-            if (userData) {
-                setCurrentUser(userData);
-                setIsLoggedIn(true);
-                refreshData();
-            }
+        const userData = getCurrentUserData();
+        // console.log("Dfg",userData);
+        if (userData?._id) {
+            setCurrentUser(userData);
+            // setCurrentUser(onLogin);
+            refreshData();
+        } else {
+            window.location.href = '/student/attendance/login';
         }
+        refreshData()
     }, []);
+    // console.log(userData);
 
     const refreshData = async () => {
         try {
@@ -109,22 +109,15 @@ export default function AttendanceTracker() {
         }
     };
 
-    const handleLogin = async (userDoc) => {
-        setCurrentUser(userDoc);
-        setIsLoggedIn(true);
-        await refreshData();
-    };
+
 
     const handleLogout = async () => {
         try {
             await logoutUser();
+            window.location.href = 'attendance/login';
         } catch (error) {
             console.error('Logout error:', error);
         }
-        setIsLoggedIn(false);
-        setCurrentUser(null);
-        setTrackedSubjects([]);
-        setAttendanceHistory([]);
     };
 
     // --- Core Logic ---
@@ -243,10 +236,6 @@ export default function AttendanceTracker() {
     }, [trackedSubjects]);
 
 
-
-    if (!isLoggedIn) {
-        return <LoginPage onLogin={handleLogin} />;
-    }
 
     return (
         <>

@@ -9,22 +9,19 @@ const subjectSchema = new mongoose.Schema({
 }, { _id: false });
 
 const attendanceEntrySchema = new mongoose.Schema({
-  id: Number, // timestamp ID
+  id: Number,
   date: { type: Date, default: Date.now },
   subjectId: String,
-  status: { type: String, enum: ["present", "absent"], required: true }
+  subjectName: String,
+  status: { type: String, enum: ["present", "absent"], required: true },
+  hours: { type: Number, default: 1 }
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ["student", "admin"], default: "student" },
   rollNumber: { type: String, unique: true, required: true },
-
+  role: { type: String, default: "student" },
   subjects: { type: Map, of: subjectSchema, default: {} },
   attendanceHistory: { type: [attendanceEntrySchema], default: [] },
-
   createdAt: { type: Date, default: Date.now },
   lastUpdated: { type: Date, default: Date.now }
 });

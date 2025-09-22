@@ -24,6 +24,7 @@ import AdminResources from "./pages/AdminResources.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import SeniorRoadmap from "./components/SeniorRoadmap.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import LoginPage from "./components/LoginPage.jsx";
 
 function App() {
   return (
@@ -55,7 +56,7 @@ function App() {
             <Route path="guide" element={<Scholarship/>} />
             <Route path="problemsolving" element={<ProblemSolvingPage />} />
             <Route path="projects" element={<Projects/>} />
-            <Route path="login/leavetracker" element={<AttendanceTracker/>} />
+            <Route path="attendance/login" element={<LoginPage onLogin={() => window.location.href = '/student/leavetracker'} />} />
             <Route path="roadmap" element={<Roadmap/>} />
             <Route path="leavetracker" element={<AttendanceTracker/>}></Route>
         </Route>

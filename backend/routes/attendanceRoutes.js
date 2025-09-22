@@ -1,19 +1,15 @@
 import express from "express";
 
-import { attendanceProtect } from "../middleware/attendanceAuth.js";
-import { addSubject, getAllAttendance, getMyAttendance, loginAttendance, logoutAttendance, markAttendance, registerAttendance, updateAttendanceStatus, deleteAttendance, deleteSubject } from "../controllers/attendanceController.js";
+import { addSubject, getAllAttendance, getUserByRollNumber, markAttendance, updateAttendanceStatus, deleteAttendance, deleteSubject } from "../controllers/attendanceController.js";
 
 const router = express.Router();
 
-router.post("/register", registerAttendance);
-router.post("/login", loginAttendance);
-router.post("/logout", attendanceProtect, logoutAttendance);
-router.put("/update-status", attendanceProtect, updateAttendanceStatus);
-router.delete("/attendance", attendanceProtect, deleteAttendance);
-router.delete("/subject", attendanceProtect, deleteSubject);
-router.post("/subject", attendanceProtect, addSubject);
-router.post("/attendance", attendanceProtect, markAttendance);
-router.get("/attendance/me", attendanceProtect, getMyAttendance);
-router.get("/attendance/all", attendanceProtect, getAllAttendance);
+router.get("/user/:rollNumber", getUserByRollNumber);
+router.put("/update-status", updateAttendanceStatus);
+router.delete("/attendance", deleteAttendance);
+router.delete("/subject", deleteSubject);
+router.post("/subject", addSubject);
+router.post("/attendance", markAttendance);
+router.get("/attendance/all", getAllAttendance);
 
 export default router;

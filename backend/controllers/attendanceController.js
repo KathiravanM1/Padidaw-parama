@@ -2,58 +2,25 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Attendance from "../models/Attendance.js";
 
-// ------------------- REGISTER -------------------
-// REGISTER
-export const registerAttendance = async (req, res) => {
+// ------------------- GET USER BY ROLL NUMBER -------------------
+export const getUserByRollNumber = async (req, res) => {
   try {
-    const { name, email, password, rollNumber, role } = req.body;
+    const { rollNumber } = req.params;
+    
+    if (!rollNumber || rollNumber === 'undefined') {
+      return res.status(400).json({ message: "Roll number is required" });
+    }
+    
+    let student = await Attendance.findOne({ rollNumber });
+    
+    // If student doesn't exist, create new one
+    if (!student) {
+      student = await Attendance.create({
+        rollNumber,
+      });
+    }
 
-    if (await Attendance.findOne({ email }))
-      return res.status(400).json({ message: "User exists" });
-
-    const hash = await bcrypt.hash(password, 10);
-    const student = await Attendance.create({
-      name,
-      email,
-      password: hash,
-      rollNumber,
-      role,
-    });
-
-    res.status(201).json({ message: "Registered successfully", student });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// ------------------- LOGIN -------------------
-export const loginAttendance = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const student = await Attendance.findOne({ email });
-    if (!student)
-      return res.status(400).json({ message: "Invalid credentials" });
-
-    const match = await bcrypt.compare(password, student.password);
-    if (!match) return res.status(400).json({ message: "Invalid credentials" });
-
-    // Create JWT token
-    const token = jwt.sign(
-      { id: student._id, role: student.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    // Send JWT as HTTP-only cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "None",
-      domain: ".vidivu.tech", // important for subdomains
-    });
-
-    // Send response without token
-    res.json({ message: "Logged in successfully", student });
+    res.json(student);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -62,8 +29,8 @@ export const loginAttendance = async (req, res) => {
 // ------------------- ADD SUBJECT -------------------
 export const addSubject = async (req, res) => {
   try {
-    const { id, name, credits } = req.body;
-    const student = await Attendance.findById(req.user.id);
+    const { id, credits, name, rollNumber } = req.body;
+    const student = await Attendance.findOne({ rollNumber });
     if (!student) return res.status(404).json({ message: "User not found" });
 
     if (student.subjects.has(id))
@@ -82,8 +49,8 @@ export const addSubject = async (req, res) => {
 // ------------------- MARK ATTENDANCE -------------------
 export const markAttendance = async (req, res) => {
   try {
-    const { subjectId, status, hours = 1 } = req.body;
-    const student = await Attendance.findById(req.user.id);
+    const { subjectId, status, hours, rollNumber } = req.body;
+    const student = await Attendance.findOne({ rollNumber });
     if (!student) return res.status(404).json({ message: "User not found" });
 
     const subject = student.subjects.get(subjectId);
@@ -118,16 +85,7 @@ export const markAttendance = async (req, res) => {
 };
 
 // ------------------- GET MY ATTENDANCE -------------------
-export const getMyAttendance = async (req, res) => {
-  try {
-    const student = await Attendance.findById(req.user.id).select(
-      "attendanceHistory subjects rollNumber"
-    );
-    res.json(student);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+
 
 // ------------------- GET ALL ATTENDANCE (ADMIN) -------------------
 export const getAllAttendance = async (req, res) => {
@@ -142,9 +100,9 @@ export const getAllAttendance = async (req, res) => {
 
 export const updateAttendanceStatus = async (req, res) => {
   try {
-    const { attendanceId, newHours } = req.body;
+    const { attendanceId, newHours, rollNumber } = req.body;
 
-    const user = await Attendance.findById(req.user.id);
+    const user = await Attendance.findOne({ rollNumber });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const attendance = user.attendanceHistory.find(
@@ -183,8 +141,8 @@ export const updateAttendanceStatus = async (req, res) => {
 
 export const deleteAttendance = async (req, res) => {
   try {
-    const { attendanceId } = req.body;
-    const user = await Attendance.findById(req.user.id);
+    const { attendanceId, rollNumber } = req.body;
+    const user = await Attendance.findOne({ rollNumber });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const attendanceIndex = user.attendanceHistory.findIndex(
@@ -220,8 +178,8 @@ export const deleteAttendance = async (req, res) => {
 
 export const deleteSubject = async (req, res) => {
   try {
-    const { subjectId } = req.body;
-    const user = await Attendance.findById(req.user.id);
+    const { subjectId, rollNumber } = req.body;
+    const user = await Attendance.findOne({ rollNumber });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if (!user.subjects.has(subjectId)) {
@@ -241,7 +199,16 @@ export const deleteSubject = async (req, res) => {
   }
 };
 
-export const logoutAttendance = (req, res) => {
-  res.clearCookie("token", { httpOnly: true, sameSite: "None" });
-  res.json({ message: "Logged out successfully" });
-};
+export const getAttendancebyId = (req,res)=>{
+  try {
+    const attendanceId = req.params.id;
+    const data = Attendance.findById(attendanceId);
+    res.json({message:"Data Successfully fetched" , data : data})
+    
+  } catch (error) {
+    res.json({error: error})    
+  }
+
+}
+
+

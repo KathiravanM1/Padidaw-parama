@@ -1,7 +1,5 @@
 import { attendanceAPI } from './api';
-import { getCurrentUserData } from './sessionAuth';
-
-let userData = null;
+import { getCurrentUserData, refreshUserData as refreshSession } from './sessionAuth';
 
 const getMaxLeaveHours = (credits) => {
   const creditValue = parseFloat(credits);
@@ -13,38 +11,48 @@ const getMaxLeaveHours = (credits) => {
 };
 
 export const refreshUserData = async () => {
-  userData = await attendanceAPI.getMyData();
-  return userData;
+  return await refreshSession();
 };
 
 
 
 export const addSubject = async (subjectData) => {
-  const subjectId = `${userData.rollNumber}_${Date.now()}`;
-  await attendanceAPI.addSubject(subjectId, subjectData.name, subjectData.credits);
+  const userData = getCurrentUserData();
+  if (!userData?.rollNumber) throw new Error('User not logged in');
+  const subjectId = `subject_${Date.now()}`;
+  await attendanceAPI.addSubject(subjectId, subjectData.name, subjectData.credits, userData.rollNumber);
   await refreshUserData();
   return { id: subjectId, ...subjectData };
 };
 
 export const markAttendance = async (subjectId, hours) => {
-  await attendanceAPI.markAttendance(subjectId, 'absent', hours);
+  const userData = getCurrentUserData();
+  if (!userData?.rollNumber) throw new Error('User not logged in');
+  await attendanceAPI.markAttendance(subjectId, 'absent', hours, userData.rollNumber);
   await refreshUserData();
 };
 
 export const deleteSubject = async (subjectId) => {
-  await attendanceAPI.deleteSubject(subjectId);
+  const userData = getCurrentUserData();
+  // console.log('deleteSubject userData:', userData);
+  if (!userData?.rollNumber) throw new Error('User not logged in');
+  await attendanceAPI.deleteSubject(subjectId, userData.rollNumber);
   await refreshUserData();
   return true;
 };
 
 export const updateAttendance = async (entryId, newHours) => {
-  await attendanceAPI.updateAttendance(entryId, newHours);
+  const userData = getCurrentUserData();
+  if (!userData?.rollNumber) throw new Error('User not logged in');
+  await attendanceAPI.updateAttendance(entryId, newHours, userData.rollNumber);
   await refreshUserData();
   return true;
 };
 
 export const deleteAttendance = async (entryId) => {
-  await attendanceAPI.deleteAttendance(entryId);
+  const userData = getCurrentUserData();
+  if (!userData?.rollNumber) throw new Error('User not logged in');
+  await attendanceAPI.deleteAttendance(entryId, userData.rollNumber);
   await refreshUserData();
   return true;
 };
