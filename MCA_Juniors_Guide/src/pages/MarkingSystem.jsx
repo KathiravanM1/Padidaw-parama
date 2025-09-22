@@ -54,15 +54,15 @@ const AnnaUniversityMarkingSystem = () => {
       const response = await studentService.getStudentData();
       const student = response.data;
       
-      console.log('Loaded student data:', student);
-      console.log('Current user:', user);
+      // console.log('Loaded student data:', student);
+      // console.log('Current user:', user);
       
       // Check if user has existing data based on backend response
       const hasData = student.hasData || (student.semesters && student.semesters.length > 0);
       setHasExistingData(hasData);
       
-      console.log('Has existing data:', hasData);
-      console.log('Student semesters:', student.semesters);
+      // console.log('Has existing data:', hasData);
+      // console.log('Student semesters:', student.semesters);
       
       // Set student info from database if available, otherwise use user data
       const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';
@@ -106,14 +106,14 @@ const AnnaUniversityMarkingSystem = () => {
       }
       
     } catch (error) {
-      console.error('Error loading student data:', error);
+      // console.error('Error loading student data:', error);
       
       if (error.message === 'User not authenticated') {
         setError('Please log in to access your data');
       } else if (error.message.includes('Access denied')) {
         setError('Access denied. Only students can access the marking system.');
       } else {
-        console.log('No existing data found, starting fresh');
+        // console.log('No existing data found, starting fresh');
         // Initialize default state for new users
         setHasExistingData(false);
         const userName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : '';

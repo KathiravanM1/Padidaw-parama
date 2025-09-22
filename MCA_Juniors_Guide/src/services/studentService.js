@@ -35,10 +35,10 @@ const getCurrentUserId = () => {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      console.log('Token payload:', payload); // Debug log
+      // console.log('Token payload:', payload); // Debug log
       return payload.userId || payload.id; // Student ID from JWT
     } catch (e) {
-      console.warn('Invalid token format:', e);
+      // console.warn('Invalid token format:', e);
       return null;
     }
   }
@@ -64,17 +64,17 @@ export const studentService = {
     if (!userId) throw new Error('User not authenticated');
     
     try {
-      console.log('Fetching student data from API...');
-      console.log('Making request to:', `${API_BASE_URL}/students/scores`);
+      // console.log('Fetching student data from API...');
+      // console.log('Making request to:', `${API_BASE_URL}/students/scores`);
       
 
       
       const response = await api.get('/students/scores');
-      console.log('API Response status:', response.status);
-      console.log('API Response data:', response.data);
+      // console.log('API Response status:', response.status);
+      // console.log('API Response data:', response.data);
       const dbData = response.data.data;
       
-      console.log('Received student data:', dbData);
+      // console.log('Received student data:', dbData);
       
       return {
         data: {
@@ -86,7 +86,7 @@ export const studentService = {
         }
       };
     } catch (error) {
-      console.error('Error fetching student data:', error);
+      // console.error('Error fetching student data:', error);
       
       if (error.response?.status === 403) {
         throw new Error('Access denied. Only students can access this data.');
@@ -138,13 +138,13 @@ export const studentService = {
       // Try to update first, if fails then add
       try {
         const response = await api.put('/students/scores', payload);
-        console.log('Data updated successfully');
+        // console.log('Data updated successfully');
         return response.data;
       } catch (updateError) {
         if (updateError.response?.status === 404) {
           // No existing data, create new
           const response = await api.post('/students/scores', payload);
-          console.log('Data created successfully');
+          // console.log('Data created successfully');
           return response.data;
         }
         throw updateError;

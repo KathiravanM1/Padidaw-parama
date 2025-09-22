@@ -141,7 +141,7 @@ const FeatureCard = ({ feature }) => {
             navigate(`/student/${feature.id}`);
             return;
         }       
-        console.log(`Redirecting to ${feature.id}...`);
+        // console.log(`Redirecting to ${feature.id}...`);
         navigate(`/student/${feature.id}`);
     };
 
