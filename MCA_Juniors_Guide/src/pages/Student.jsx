@@ -137,6 +137,10 @@ const itemVariants = {
 const FeatureCard = ({ feature }) => {
   const navigate = useNavigate();
     const handleRedirect = () => {
+        if(feature.id === 'leavetracker'){
+            navigate(`/student/${feature.id}`);
+            return;
+        }       
         console.log(`Redirecting to ${feature.id}...`);
         navigate(`/student/${feature.id}`);
     };

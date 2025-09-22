@@ -162,7 +162,7 @@ const Resources = () => {
                           {subject.materials.length > 0 ? (
                             subject.materials.map((material, index) => (
                               <div key={index} className="bg-gray-50 rounded-2xl p-4 hover:bg-gray-100 transition-colors">
-                                <div className="flex items-center justify-between">
+                                <div className="grid grid-cols-1 gap-5 justify-center items-center lg:grid-cols-2">
                                   <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="text-2xl">{getFileIcon(material.type)}</span>
                                     <div className="flex-1 min-w-0">
@@ -173,14 +173,14 @@ const Resources = () => {
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex gap-2 ml-4">
+                                  <div className="flex justify-center lg:justify-end">
                                 
                                     <a
-                                      href={material.url}
+                                      href={material.url} 
                                       download
-                                      className="p-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors"
+                                      className="px-5 py-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors"
                                     >
-                                      <span className="text-sm">⬇</span>
+                                      <span className="text-sm">Download ⬇</span>
                                     </a>
                                   </div>
                                 </div>
@@ -202,8 +202,8 @@ const Resources = () => {
                           {subject.questionPapers.length > 0 ? (
                             subject.questionPapers.map((paper, index) => (
                               <div key={index} className="bg-gray-50 rounded-2xl p-4 hover:bg-gray-100 transition-colors">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                  <div className="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
                                     <span className="text-2xl">📋</span>
                                     <div className="flex-1 min-w-0">
                                       <p className="font-medium text-gray-800 truncate">{paper.name}</p>
@@ -213,14 +213,14 @@ const Resources = () => {
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="flex gap-2 ml-4">
+                                  <div className="flex gap-2 justify-center lg:justify-end">
                         
                                     <a
                                       href={paper.url}
                                       download
-                                      className="p-2 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors"
+                                      className="px-5 py-3 bg-green-100 text-green-600 rounded-xl hover:bg-green-200 transition-colors"
                                     >
-                                      <span className="text-sm">⬇</span>
+                                      <span className="text-sm">Download ⬇</span>
                                     </a>
                                   </div>
                                 </div>
