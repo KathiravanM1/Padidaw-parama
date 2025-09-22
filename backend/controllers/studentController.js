@@ -44,7 +44,7 @@ export const loginStudent = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error logging in student:', error);
+    // console.error('Error logging in student:', error);
     res.status(500).json({
       success: false,
       message: 'Login failed',
@@ -101,7 +101,7 @@ export const registerStudent = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error registering student:', error);
+    // console.error('Error registering student:', error);
     res.status(500).json({
       success: false,
       message: 'Registration failed',
@@ -113,7 +113,7 @@ export const registerStudent = async (req, res) => {
 // Get student scores - Main endpoint for fetching student data
 export const getStudentScores = async (req, res) => {
   try {
-    console.log('Getting student scores for user:', req.user._id, 'Role:', req.user.role);
+    // console.log('Getting student scores for user:', req.user._id, 'Role:', req.user.role);
     
     // Check if user is a student
     if (req.user.role !== 'student') {
@@ -126,37 +126,37 @@ export const getStudentScores = async (req, res) => {
 
     // Find existing student data linked to this user
     let studentData = await Student.findOne({ userId: req.user._id }).select('-password');
-    console.log('Student data found by userId:', studentData ? 'Yes' : 'No');
+    // console.log('Student data found by userId:', studentData ? 'Yes' : 'No');
     
     // If not found by userId, try to find by name match and link it
     if (!studentData) {
       const userName = `${req.user.firstName} ${req.user.lastName}`.trim();
-      console.log('Searching for student by name:', userName);
+      // console.log('Searching for student by name:', userName);
       
       studentData = await Student.findOne({ name: userName }).select('-password');
-      console.log('Student data found by name:', studentData ? 'Yes' : 'No');
+      // console.log('Student data found by name:', studentData ? 'Yes' : 'No');
       
       if (studentData) {
         // Link the existing student data to this user
-        console.log('Linking existing student data to user');
+        // console.log('Linking existing student data to user');
         studentData.userId = req.user._id;
         await studentData.save();
-        console.log('Student data linked successfully');
+        // console.log('Student data linked successfully');
       }
     }
     
     if (studentData) {
-      console.log('Student data details:', {
-        registration_no: studentData.registration_no,
-        name: studentData.name,
-        semesters_count: studentData.semesters?.length || 0,
-        current_cgpa: studentData.current_cgpa
-      });
+      // console.log('Student data details:', {
+      //   registration_no: studentData.registration_no,
+      //   name: studentData.name,
+      //   semesters_count: studentData.semesters?.length || 0,
+      //   current_cgpa: studentData.current_cgpa
+      // });
     }
     
     if (!studentData) {
       // No data exists, return empty structure
-      console.log('No student data found, returning empty structure');
+      // console.log('No student data found, returning empty structure');
       return res.status(200).json({
         success: true,
         data: {
@@ -169,7 +169,7 @@ export const getStudentScores = async (req, res) => {
       });
     }
 
-    console.log('Returning existing student data');
+    // console.log('Returning existing student data');
     res.status(200).json({
       success: true,
       data: {
@@ -181,7 +181,7 @@ export const getStudentScores = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching student scores:', error);
+    // console.error('Error fetching student scores:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch student data',
@@ -195,7 +195,7 @@ export const addStudentScores = async (req, res) => {
   try {
     const { registration_no, name, semesters } = req.body;
 
-    console.log('Adding student scores for user:', req.user._id);
+    // console.log('Adding student scores for user:', req.user._id);
     
     // Check if user is a student
     if (req.user.role !== 'student') {
@@ -263,7 +263,7 @@ export const addStudentScores = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error adding student scores:', error);
+    // console.error('Error adding student scores:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to add student data',
@@ -277,7 +277,7 @@ export const updateStudentScores = async (req, res) => {
   try {
     const { registration_no, name, semesters } = req.body;
 
-    console.log('Updating student scores for user:', req.user._id);
+    // console.log('Updating student scores for user:', req.user._id);
     
     // Check if user is a student
     if (req.user.role !== 'student') {

@@ -130,7 +130,7 @@ export const downloadResume = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching resume:', error);
+    // console.error('Error fetching resume:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch resume',

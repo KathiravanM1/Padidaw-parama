@@ -52,7 +52,7 @@ export const addCompany = async (req, res) => {
       message: 'Company added successfully'
     });
   } catch (error) {
-    console.error('Error adding company:', error);
+    // console.error('Error adding company:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to add company',

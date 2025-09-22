@@ -94,7 +94,7 @@ export const getProblemById = async (req, res) => {
       data: problem
     });
   } catch (error) {
-    console.error('Error fetching problem:', error);
+    // console.error('Error fetching problem:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch problem',

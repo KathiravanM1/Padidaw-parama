@@ -30,7 +30,7 @@ export const createProject = async (req, res) => {
       data: savedProject
     });
   } catch (error) {
-    console.error('Error creating project:', error);
+    // console.error('Error creating project:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to create project',
@@ -90,7 +90,7 @@ export const getProjectById = async (req, res) => {
       data: project
     });
   } catch (error) {
-    console.error('Error fetching project:', error);
+    // console.error('Error fetching project:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch project',

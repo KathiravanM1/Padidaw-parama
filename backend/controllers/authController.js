@@ -16,15 +16,15 @@ export const register = async (req, res) => {
     }
 
     const { email, password, firstName, lastName, role } = req.body;
-    console.log('Extracted data:', { email, firstName, lastName, role });
+    // console.log('Extracted data:', { email, firstName, lastName, role });
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.log('User already exists:', email);
+      // console.log('User already exists:', email);
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    console.log('Creating new user...');
+    // console.log('Creating new user...');
     const userRole = role || 'student';
     const user = new User({
       email,
@@ -34,9 +34,9 @@ export const register = async (req, res) => {
       role: userRole
     });
 
-    console.log('Saving user...');
+    // console.log('Saving user...');
     await user.save();
-    console.log('User saved successfully');
+    // console.log('User saved successfully');
 
     if (userRole === 'senior') {
       // Senior registration requires approval
@@ -55,7 +55,7 @@ export const register = async (req, res) => {
     } else {
       // Student registration is auto-approved
       const token = generateToken({ userId: user._id, role: user.role });
-      console.log('Token generated');
+      // console.log('Token generated');
 
       res.status(201).json({
         message: 'User registered successfully',
