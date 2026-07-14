@@ -1,20 +1,23 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, Menu, X, Twitter, Github, Linkedin, ArrowUp, LogOut, Shield, Settings, Users, Database, BarChart3, FileText } from 'lucide-react';
+import { GraduationCap, Menu, X, Twitter, Github, Linkedin, ArrowUp, LogOut, Home, Upload, FolderOpen, Users, HelpCircle, UserCheck } from 'lucide-react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 // --- DATA ---
-const adminNavLinks = [
-    { href: "", text: "Dashboard", icon: BarChart3 },
-    { href: "resources", text: "Manage Resources", icon: FileText }
+const seniorNavLinks = [
+    { href: "", text: "Dashboard", icon: Home },
+    { href: "resources", text: "Resources", icon: Upload },
+    { href: "project", text: "Projects", icon: FolderOpen },
+    { href: "problemsolving", text: "Problem Solving", icon: HelpCircle },
+    { href: "roadmap", text: "Experience", icon: Users },
 ];
 
-const AdminHeader = () => {
+const SeniorHeader = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(false);
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     
     const handleLogout = () => {
         logout();
@@ -22,7 +25,7 @@ const AdminHeader = () => {
     };
 
     const isActive = (path) => {
-        const currentPath = location.pathname.replace('/admin/', '') || '';
+        const currentPath = location.pathname.replace('/senior/', '') || '';
         return currentPath === path;
     };
 
@@ -32,29 +35,26 @@ const AdminHeader = () => {
                 initial={{ y: -100, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-sm border-b border-red-100"
+                className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-lg shadow-sm"
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         {/* Left Side: Logo and App Name */}
-                        <Link to="/admin" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        <Link to="/senior" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                             <GraduationCap className="w-8 h-8 text-gray-800" />
                             <span className="font-serif text-2xl font-bold text-gray-900">Vidivu</span>
-                            <span className="hidden sm:inline text-sm text-gray-600 font-medium items-center gap-1">
-                                <Shield className="w-3 h-3" />
-                                Admin
-                            </span>
+                            <span className="hidden sm:inline text-sm text-gray-600 font-medium">Senior</span>
                         </Link>
 
                         {/* Right Side: Desktop Navigation and Logout */}
                         <div className="hidden md:flex items-center gap-4 lg:gap-6">
                             <nav className="flex items-center gap-6">
-                                {adminNavLinks.slice(0, 4).map(link => {
+                                {seniorNavLinks.map(link => {
                                     const Icon = link.icon;
                                     return (
                                         <Link
                                             key={link.text}
-                                            to={`/admin/${link.href}`}
+                                            to={`/senior/${link.href}`}
                                             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
                                                 isActive(link.href)
                                                     ? 'bg-gray-100 text-gray-900 font-medium'
@@ -66,7 +66,23 @@ const AdminHeader = () => {
                                         </Link>
                                     );
                                 })}
+                                <Link
+                                    to="/student"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 font-medium"
+                                    title="🎓 Access Student Dashboard - View as Student"
+                                >
+                                    <UserCheck className="w-4 h-4" />
+                                    <span className="hidden lg:inline">Student View</span>
+                                </Link>
                             </nav>
+                            <div className="h-6 w-px bg-gray-300"></div>
+                            <Link
+                                to="/senior/profile"
+                                className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold hover:opacity-90 transition-opacity"
+                                title="My Profile"
+                            >
+                                {user?.firstName?.[0]}{user?.lastName?.[0]}
+                            </Link>
                             <div className="h-6 w-px bg-gray-300"></div>
                             <button
                                 onClick={handleLogout}
@@ -101,12 +117,12 @@ const AdminHeader = () => {
                             className="md:hidden bg-white border-t border-gray-200 shadow-lg"
                         >
                             <div className="px-4 py-4 space-y-2">
-                                {adminNavLinks.map((link) => {
+                                {seniorNavLinks.map((link) => {
                                     const Icon = link.icon;
                                     return (
                                         <Link
                                             key={link.text}
-                                            to={`/admin/${link.href}`}
+                                            to={`/senior/${link.href}`}
                                             onClick={() => setIsOpen(false)}
                                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                                                 isActive(link.href)
@@ -119,7 +135,25 @@ const AdminHeader = () => {
                                         </Link>
                                     );
                                 })}
+                                <Link
+                                    to="/student"
+                                    onClick={() => setIsOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 text-blue-600 hover:text-blue-800 hover:bg-blue-50 border border-blue-200 font-medium"
+                                >
+                                    <UserCheck className="w-5 h-5" />
+                                    🎓 Student View
+                                </Link>
                                 <div className="border-t border-gray-200 pt-2 mt-2">
+                                    <Link
+                                        to="/senior/profile"
+                                        onClick={() => setIsOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                                    >
+                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                                            {user?.firstName?.[0]}
+                                        </div>
+                                        My Profile
+                                    </Link>
                                     <button
                                         onClick={handleLogout}
                                         className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg font-medium transition-all duration-200"
@@ -136,8 +170,7 @@ const AdminHeader = () => {
         </>
     );
 };
-
-const AdminFooter = () => {
+const SeniorFooter = () => {
     return (
         <motion.footer 
             initial={{ opacity: 0 }}
@@ -170,13 +203,13 @@ const AdminFooter = () => {
                     </motion.a>
                 </div>
                 <p className="font-mono text-sm text-gray-500">&copy; {new Date().getFullYear()} Vidivu. All rights reserved.</p>
-                <p className="font-mono text-xs text-gray-600 mt-1">Admin Panel - Restricted Access</p>
             </div>
         </motion.footer>
     );
 };
 
-export default function AdminLayout() {
+
+export default function SeniorLayout() {
     const { isAuthenticated, isLoading } = useAuth();
     const navigate = useNavigate();
     const [showScrollTop, setShowScrollTop] = useState(false);
@@ -239,14 +272,14 @@ export default function AdminLayout() {
                 .font-mono { font-family: 'JetBrains Mono', monospace; }
             `}</style>
             
-            <AdminHeader />
+            <SeniorHeader />
             <main className="flex-grow pt-20">
                 <div className="max-w-10xl mx-auto min-h-[calc(100vh-160px)]" style={{background: 'linear-gradient(135deg, #ECFAE5 0%, #DDF6D2 100%)'}}>
                     <Outlet/>
                 </div>
             </main>
 
-            <AdminFooter />
+            <SeniorFooter />
             
             {/* Scroll to Top Button */}
             <AnimatePresence>

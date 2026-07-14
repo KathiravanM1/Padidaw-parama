@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import { validationResult } from 'express-validator';
 import User from '../models/User.js';
 import { generateToken } from '../utils/jwt.js';
+import { sendMail } from '../utils/mailer.js';
 
 export const register = async (req, res) => {
   try {
@@ -38,10 +40,9 @@ export const register = async (req, res) => {
     await user.save();
     // console.log('User saved successfully');
 
-    if (userRole === 'senior') {
-      // Senior registration requires approval
+    if (userRole === 'senior' || userRole === 'alumni') {
       res.status(201).json({
-        message: 'Senior registration submitted successfully. Please wait for admin approval before you can login.',
+        message: `${userRole.charAt(0).toUpperCase() + userRole.slice(1)} registration submitted successfully. Please wait for admin approval before you can login.`,
         requiresApproval: true,
         user: {
           id: user._id,
@@ -95,10 +96,10 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Check if senior user is approved
-    if (user.role === 'senior' && !user.isApproved) {
+    // Check if senior or alumni user is approved
+    if ((user.role === 'senior' || user.role === 'alumni') && !user.isApproved) {
       return res.status(403).json({ 
-        message: 'Your senior account is pending admin approval. Please wait for approval before logging in.',
+        message: 'Your account is pending admin approval. Please wait for approval before logging in.',
         requiresApproval: true
       });
     }
@@ -133,13 +134,65 @@ export const getProfile = async (req, res) => {
   }
 };
 
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'No account found with that email.' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    user.resetPasswordToken = token;
+    user.resetPasswordExpiry = Date.now() + 1000 * 60 * 30; // 30 minutes
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    await sendMail({
+      to: user.email,
+      subject: 'Password Reset Request',
+      html: `
+        <p>Hi ${user.firstName},</p>
+        <p>Click the link below to reset your password. This link expires in 30 minutes.</p>
+        <a href="${resetUrl}" style="background:#16a34a;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;">Reset Password</a>
+        <p>If you didn't request this, ignore this email.</p>
+      `,
+    });
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiry: { $gt: Date.now() },
+    });
+
+    if (!user) return res.status(400).json({ message: 'Invalid or expired reset token.' });
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiry = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now log in.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 export const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName } = req.body;
-    
+    const { firstName, lastName, rollNo, registrationNo } = req.body;
+
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { firstName, lastName },
+      { firstName, lastName, rollNo, registrationNo },
       { new: true, runValidators: true }
     ).select('-password');
 

@@ -25,15 +25,14 @@ const UserSchema = new Schema({
     required: true,
     trim: true,
   },
-  registrationNo: {
+  rollNo: {
     type: String,
     trim: true,
-    sparse: true, // Allow null values but ensure uniqueness when present
   },
   role: {
     type: String,
     required: true,
-    enum: ['student', 'senior', 'admin'],
+    enum: ['student', 'senior', 'admin', 'alumni'],
     default: 'student',
   },
   isActive: {
@@ -43,7 +42,7 @@ const UserSchema = new Schema({
   isApproved: {
     type: Boolean,
     default: function() {
-      return this.role === 'student'; // Students are auto-approved
+      return this.role === 'student';
     },
   },
   approvedBy: {
@@ -60,6 +59,8 @@ const UserSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  resetPasswordToken: String,
+  resetPasswordExpiry: Date,
 });
 
 // Hash password before saving

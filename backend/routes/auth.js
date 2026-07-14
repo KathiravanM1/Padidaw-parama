@@ -1,5 +1,5 @@
 import express from 'express';
-import { register, login, getProfile, updateProfile } from '../controllers/authController.js';
+import { register, login, getProfile, updateProfile, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { registerValidation, loginValidation } from '../middleware/validation.js';
 import User from '../models/User.js';
@@ -13,6 +13,8 @@ const router = express.Router();
 // Public routes
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password/:token', resetPassword);
 
 // Protected routes
 router.get('/profile', authenticate, getProfile);
@@ -28,11 +30,11 @@ router.get('/admin/users', authenticate, authorize('admin'), async (req, res) =>
   }
 });
 
-// Get pending senior approvals
+// Get pending senior/alumni approvals
 router.get('/admin/pending-seniors', authenticate, authorize('admin'), async (req, res) => {
   try {
     const pendingSeniors = await User.find({ 
-      role: 'senior', 
+      role: { $in: ['senior', 'alumni'] }, 
       isApproved: false,
       isActive: true 
     }).select('-password').sort({ createdAt: -1 });

@@ -16,8 +16,8 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid token or user not found.' });
     }
     
-    // Check if senior user is approved
-    if (user.role === 'senior' && !user.isApproved) {
+    // Check if senior or alumni user is approved
+    if ((user.role === 'senior' || user.role === 'alumni') && !user.isApproved) {
       return res.status(403).json({ message: 'Account pending approval. Please wait for admin approval.' });
     }
 

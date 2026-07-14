@@ -18,8 +18,7 @@ const attendanceEntrySchema = new mongoose.Schema({
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({
-  rollNumber: { type: String, unique: true, required: true },
-  role: { type: String, default: "student" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', unique: true, required: true },
   subjects: { type: Map, of: subjectSchema, default: {} },
   attendanceHistory: { type: [attendanceEntrySchema], default: [] },
   createdAt: { type: Date, default: Date.now },

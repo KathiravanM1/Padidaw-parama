@@ -15,8 +15,8 @@ export const registerValidation = [
     .withMessage('Last name is required'),
   body('role')
     .optional()
-    .isIn(['student', 'senior', 'admin'])
-    .withMessage('Role must be student, senior, or admin')
+    .isIn(['student', 'senior', 'alumni'])
+    .withMessage('Role must be student, senior, or alumni')
 ];
 
 export const loginValidation = [

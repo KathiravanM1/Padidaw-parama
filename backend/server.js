@@ -15,6 +15,8 @@ import companyRoutes from './routes/companyRoutes.js';
 import adminDeleteRouter from './routes/adminDeleteRoutes.js';
 import cookieParser from "cookie-parser";
 import attendanceRoutes from "./routes/attendanceRoutes.js"
+import alumniRoutes from "./routes/alumniRoutes.js"
+import approvalRoutes from "./routes/approvalRoutes.js"
 
 dotenv.config();
 
@@ -55,6 +57,8 @@ app.use('/api/companies', companyRoutes);
 app.use('/api/admin/delete', adminDeleteRouter);
 app.use('/api', healthRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/alumni", alumniRoutes);
+app.use("/api/approvals", approvalRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the MCA Guide Project API', status: 'running' });

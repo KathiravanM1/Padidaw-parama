@@ -455,7 +455,7 @@ const AdminPanel = () => {
         <div className="px-3">
           {[
             { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-            { id: 'approvals', label: 'Senior Approvals', icon: Users },
+            { id: 'approvals', label: 'Approvals', icon: Users },
             { id: 'users', label: 'User Management', icon: Users },
             { id: 'interviews', label: 'Interview Experiences', icon: BookOpen },
             { id: 'problems', label: 'Problem Solving', icon: Brain },
@@ -548,6 +548,12 @@ const AdminPanel = () => {
           value={allUsers.filter(u => u.role === 'senior' && u.isApproved === true).length} 
           icon={Star} 
           color="bg-purple-500"
+        />
+        <StatCard 
+          title="Active Alumni" 
+          value={allUsers.filter(u => u.role === 'alumni' && u.isApproved === true).length} 
+          icon={Star} 
+          color="bg-amber-500"
         />
       </div>
 
@@ -1105,7 +1111,7 @@ const AdminPanel = () => {
   const SeniorApprovals = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900" style={{fontFamily: 'Instrument Serif'}}>Senior Approvals</h1>
+        <h1 className="text-3xl font-bold text-gray-900" style={{fontFamily: 'Instrument Serif'}}>Pending Approvals</h1>
         <button 
           onClick={fetchPendingSeniors}
           disabled={loading}
@@ -1142,6 +1148,12 @@ const AdminPanel = () => {
           <div className="text-sm text-gray-600">Approved Seniors</div>
         </div>
         <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="text-2xl font-bold text-amber-600" style={{fontFamily: 'Instrument Serif'}}>
+            {allUsers.filter(u => u.role === 'alumni' && u.isApproved === true).length}
+          </div>
+          <div className="text-sm text-gray-600">Approved Alumni</div>
+        </div>
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="text-2xl font-bold text-blue-600" style={{fontFamily: 'Instrument Serif'}}>
             {allUsers.filter(u => u.role === 'student').length}
           </div>
@@ -1165,6 +1177,7 @@ const AdminPanel = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900" style={{fontFamily: 'Space Grotesk'}}>User Details</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900" style={{fontFamily: 'Space Grotesk'}}>Role</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900" style={{fontFamily: 'Space Grotesk'}}>Registration Date</th>
                     <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900" style={{fontFamily: 'Space Grotesk'}}>Status</th>
                     <th className="px-6 py-4 text-right text-sm font-semibold text-gray-900" style={{fontFamily: 'Space Grotesk'}}>Actions</th>
@@ -1184,6 +1197,15 @@ const AdminPanel = () => {
                           )}
                         </div>
                       </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full capitalize ${
+                          senior.role === 'alumni'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {senior.role}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(senior.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -1202,7 +1224,7 @@ const AdminPanel = () => {
                             onClick={() => handleApproveSenior(senior._id)}
                             disabled={loading}
                             className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1 transition-all duration-200"
-                            title="✅ Approve Senior - User will be able to login immediately"
+                            title="Approve — User will be able to login immediately"
                           >
                             {loading ? (
                               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>

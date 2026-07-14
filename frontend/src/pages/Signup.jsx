@@ -297,6 +297,7 @@ export default function Signup() {
                   >
                     <option value="student">Student</option>
                     <option value="senior">Senior</option>
+                    <option value="alumni">Alumni</option>
                   </select>
                 </div>
                 
@@ -407,6 +408,7 @@ export default function Signup() {
                 >
                   <option value="student">Student</option>
                   <option value="senior">Senior</option>
+                  <option value="alumni">Alumni</option>
                 </select>
                 
                 <button

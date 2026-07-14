@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, BookOpen, AlertTriangle, Plus, CheckCircle, XCircle, Trash2, Edit, X, LogOut } from 'lucide-react';
-import { getCurrentUser, logoutUser, getCurrentUserData, setUserByRollNumber } from '../utils/sessionAuth';
-import { addSubject, markAttendance, deleteSubject, updateAttendance, deleteAttendance, getMaxLeaveHours, refreshUserData } from '../utils/attendanceDB';
+import { useAuth } from '../contexts/AuthContext';
+import { addSubject, markAttendance, deleteSubject, updateAttendance, deleteAttendance, getMaxLeaveHours, fetchMyAttendance } from '../utils/attendanceDB';
 
 
 const EditAbsenceModal = ({ entry, onSave, onClose }) => {
@@ -63,8 +63,8 @@ const EditAbsenceModal = ({ entry, onSave, onClose }) => {
 
 // --- MAIN COMPONENT ---
 export default function AttendanceTracker({onLogin}) {
+    const { user } = useAuth();
     const [currentUser, setCurrentUser] = useState(null);
-    // currentUser = onLogin;
     
     // State for subjects the user is actively tracking (initially empty)
     const [trackedSubjects, setTrackedSubjects] = useState([]);
@@ -84,25 +84,21 @@ export default function AttendanceTracker({onLogin}) {
 
     // Check session on mount
     useEffect(() => {
-        const userData = getCurrentUserData();
-        // console.log("Dfg",userData);
-        if (userData?._id) {
-            setCurrentUser(userData);
-            // setCurrentUser(onLogin);
+        if (user) {
+            setCurrentUser(user);
             refreshData();
-        } else {
-            window.location.href = '/student/attendance/login';
         }
-        refreshData()
-    }, []);
-    // console.log(userData);
+    }, [user]);
 
     const refreshData = async () => {
         try {
-            const userData = await refreshUserData();
-            if (userData) {
-                setTrackedSubjects(Object.values(userData.subjects));
-                setAttendanceHistory(userData.attendanceHistory);
+            const data = await fetchMyAttendance();
+            if (data) {
+                const subjects = data.subjects
+                    ? Object.values(data.subjects)
+                    : [];
+                setTrackedSubjects(subjects);
+                setAttendanceHistory(data.attendanceHistory || []);
             }
         } catch (error) {
             console.error('Failed to refresh data:', error);
@@ -113,8 +109,7 @@ export default function AttendanceTracker({onLogin}) {
 
     const handleLogout = async () => {
         try {
-            await logoutUser();
-            window.location.href = 'attendance/login';
+            window.location.href = '/student';
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -265,7 +260,7 @@ export default function AttendanceTracker({onLogin}) {
                         Attendance Tracker
                     </h1>
                     <p className="text-sm sm:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-                        Welcome {currentUser?.rollNumber}! Track your attendance for the current semester.
+                        Welcome {currentUser?.firstName}! Track your attendance for the current semester.
                     </p>
                 </motion.div>
 

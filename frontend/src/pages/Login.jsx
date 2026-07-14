@@ -96,12 +96,10 @@ export default function Login() {
   // Role-based redirection
   const getRedirectPath = (userRole) => {
     switch (userRole) {
-      case 'admin':
-        return '/admin';
-      case 'senior':
-        return '/senior';
-      default:
-        return '/student';
+      case 'admin':  return '/admin';
+      case 'senior': return '/senior';
+      case 'alumni': return '/alumni';
+      default:       return '/student';
     }
   };
 
@@ -257,6 +255,11 @@ export default function Login() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     placeholder="Enter your password"
                   />
+                  <div className="text-right mt-1">
+                    <Link to="/forgot-password" className="text-sm text-green-600 hover:text-green-700">
+                      Forgot password?
+                    </Link>
+                  </div>
                 </div>
                 
 
@@ -331,6 +334,11 @@ export default function Login() {
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="Password"
                 />
+                <div className="text-right">
+                  <Link to="/forgot-password" className="text-sm text-green-600 hover:text-green-700">
+                    Forgot password?
+                  </Link>
+                </div>
                 
 
                 

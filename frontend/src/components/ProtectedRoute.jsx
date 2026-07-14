@@ -26,6 +26,8 @@ const ProtectedRoute = ({ children, allowedRoles = [], requireAuth = true }) => 
         return <Navigate to="/admin" replace />;
       case 'senior':
         return <Navigate to="/senior" replace />;
+      case 'alumni':
+        return <Navigate to="/alumni" replace />;
       default:
         return <Navigate to="/student" replace />;
     }

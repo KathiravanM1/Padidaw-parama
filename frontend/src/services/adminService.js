@@ -9,17 +9,13 @@ const getAuthHeaders = () => {
 };
 
 export const adminService = {
-  // Get pending senior approvals
+  // Get pending senior/alumni approvals
   getPendingSeniors: async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/admin/pending-seniors`, {
+      const response = await fetch(`${API_BASE_URL}/approvals/pending`, {
         headers: getAuthHeaders(),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch pending seniors');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch pending approvals');
       const data = await response.json();
       return { success: true, data: data.pendingSeniors };
     } catch (error) {
@@ -27,18 +23,14 @@ export const adminService = {
     }
   },
 
-  // Approve senior user
+  // Approve user (senior or alumni)
   approveSenior: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/admin/approve-senior/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/approvals/approve/${userId}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to approve senior');
-      }
-
+      if (!response.ok) throw new Error('Failed to approve user');
       const data = await response.json();
       return { success: true, data: data.user, message: data.message };
     } catch (error) {
@@ -46,18 +38,14 @@ export const adminService = {
     }
   },
 
-  // Reject senior user (deletes user data)
+  // Reject user (senior or alumni)
   rejectSenior: async (userId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/admin/reject-senior/${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/approvals/reject/${userId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to reject senior');
-      }
-
+      if (!response.ok) throw new Error('Failed to reject user');
       const data = await response.json();
       return { success: true, message: data.message };
     } catch (error) {

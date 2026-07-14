@@ -130,13 +130,19 @@ const API_BASE_URL = import.meta.env.VITE_API_URL;
     setUser(null);
   };
 
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
+  };
+
   const value = {
     user,
+    token,
     isLoading,
     isAuthenticated: !!user,
     login,
     register,
     logout,
+    updateUser,
   };
 
   return (

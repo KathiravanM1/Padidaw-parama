@@ -1,15 +1,25 @@
 import express from "express";
-
-import { addSubject, getAllAttendance, getUserByRollNumber, markAttendance, updateAttendanceStatus, deleteAttendance, deleteSubject } from "../controllers/attendanceController.js";
+import { authenticate } from "../middleware/auth.js";
+import {
+  getMyAttendance,
+  addSubject,
+  markAttendance,
+  updateAttendanceStatus,
+  deleteAttendance,
+  deleteSubject,
+  getAllAttendance,
+} from "../controllers/attendanceController.js";
 
 const router = express.Router();
 
-router.get("/user/:rollNumber", getUserByRollNumber);
-router.put("/update-status", updateAttendanceStatus);
-router.delete("/attendance", deleteAttendance);
-router.delete("/subject", deleteSubject);
+router.use(authenticate);
+
+router.get("/me", getMyAttendance);
 router.post("/subject", addSubject);
-router.post("/attendance", markAttendance);
-router.get("/attendance/all", getAllAttendance);
+router.delete("/subject", deleteSubject);
+router.post("/mark", markAttendance);
+router.put("/update", updateAttendanceStatus);
+router.delete("/entry", deleteAttendance);
+router.get("/all", getAllAttendance);
 
 export default router;

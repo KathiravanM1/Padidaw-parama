@@ -32,6 +32,7 @@ const studentNavLinks = [
   { href: "problemsolving", text: "Problem Solving", icon: Users },
   { href: "projects", text: "Projects", icon: GraduationCap },
   { href: "leavetracker", text: "Leave Tracker", icon: BookOpen },
+  { href: "alumni", text: "Alumni Corner", icon: Users },
 ];
 
 // --- LAYOUT COMPONENTS ---
@@ -108,6 +109,14 @@ const StudentHeader = () => {
                 )}
               </nav>
               <div className="h-6 w-px bg-gray-300"></div>
+              <Link
+                to="/student/profile"
+                className="w-9 h-9 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-sm font-bold hover:opacity-90 transition-opacity"
+                title="My Profile"
+              >
+                {user?.firstName?.[0]}{user?.lastName?.[0]}
+              </Link>
+              <div className="h-6 w-px bg-gray-300"></div>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg font-medium transition-all duration-200"
@@ -175,6 +184,16 @@ const StudentHeader = () => {
                 </Link>
               )}
               <div className="border-t border-gray-200 pt-2 mt-2">
+                <Link
+                  to="/student/profile"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-all duration-200"
+                >
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white text-xs font-bold">
+                    {user?.firstName?.[0]}
+                  </div>
+                  My Profile
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg font-medium transition-all duration-200"

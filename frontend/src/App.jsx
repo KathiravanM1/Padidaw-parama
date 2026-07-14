@@ -22,6 +22,13 @@ import Roadmap from "./pages/Roadmap.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import AdminResources from "./pages/AdminResources.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import Profile from "./pages/Profile.jsx";
+import AlumniLayout from "./Layouts/AlumniLayout.jsx";
+import AlumniDashboard from "./pages/AlumniDashboard.jsx";
+import CreateAlumniPost from "./pages/CreateAlumniPost.jsx";
+import AlumniPage from "./pages/AlumniPage.jsx";
 import SeniorRoadmap from "./components/SeniorRoadmap.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginPage from "./components/LoginPage.jsx";
@@ -33,6 +40,8 @@ function App() {
             <Route index element={<LandingPage />} />
             <Route path="signup" element={<Signup />} />
             <Route path="login" element={<Login />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password/:token" element={<ResetPassword />} />
         </Route>
         <Route path="senior" element={
           <ProtectedRoute allowedRoles={['senior', 'admin']}>
@@ -44,6 +53,7 @@ function App() {
             <Route path="project" element={<ShareProject/>} />
             <Route path="problemsolving" element={<PostProblemPage/>} />
             <Route path="roadmap" element={<SeniorRoadmap/>} />
+            <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="student" element={
           <ProtectedRoute allowedRoles={['student', 'senior', 'admin']}>
@@ -59,6 +69,8 @@ function App() {
             <Route path="attendance/login" element={<LoginPage onLogin={() => window.location.href = '/student/leavetracker'} />} />
             <Route path="roadmap" element={<Roadmap/>} />
             <Route path="leavetracker" element={<AttendanceTracker/>}></Route>
+            <Route path="profile" element={<Profile />} />
+            <Route path="alumni" element={<AlumniPage />} />
         </Route>
         <Route path="admin" element={
           <ProtectedRoute allowedRoles={['admin']}>
@@ -67,6 +79,17 @@ function App() {
         }>
             <Route index element={<AdminPanel />} />
             <Route path="resources" element={<AdminResources />} />
+            <Route path="profile" element={<Profile />} />
+        </Route>
+
+        <Route path="alumni" element={
+          <ProtectedRoute allowedRoles={['alumni', 'admin']}>
+            <AlumniLayout />
+          </ProtectedRoute>
+        }>
+            <Route index element={<AlumniDashboard />} />
+            <Route path="post" element={<CreateAlumniPost />} />
+            <Route path="profile" element={<Profile />} />
         </Route>
         
         <Route path="*" element={<DefaultLayout />}>
