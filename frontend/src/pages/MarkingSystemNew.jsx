@@ -251,18 +251,16 @@ const AnnaUniversityMarkingSystem = () => {
   const calculateGPA = useCallback((semester) => {
     if (!allSemesterCourses[semester]) return '0.00';
     const courses = allSemesterCourses[semester];
-    const passedCourses = courses.filter(course => course.grade !== 'U');
-    const totalCredits = passedCourses.reduce((sum, course) => sum + Number(course.credits), 0);
-    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (Number(course.credits) * course.gradePoints), 0);
+    const totalCredits = courses.reduce((sum, course) => sum + Number(course.credits), 0);
+    const totalGradePoints = courses.reduce((sum, course) => sum + (Number(course.credits) * (course.grade === 'U' ? 0 : course.gradePoints)), 0);
     return totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
   }, [allSemesterCourses]);
 
   const calculateCGPA = useCallback(() => {
     if (selectedSemesters.length === 0) return '0.00';
     const allCourses = selectedSemesters.flatMap(semester => allSemesterCourses[semester] || []);
-    const passedCourses = allCourses.filter(course => course.grade !== 'U');
-    const totalCredits = passedCourses.reduce((sum, course) => sum + Number(course.credits), 0);
-    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (Number(course.credits) * course.gradePoints), 0);
+    const totalCredits = allCourses.reduce((sum, course) => sum + Number(course.credits), 0);
+    const totalGradePoints = allCourses.reduce((sum, course) => sum + (Number(course.credits) * (course.grade === 'U' ? 0 : course.gradePoints)), 0);
     return totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
   }, [selectedSemesters, allSemesterCourses]);
 
