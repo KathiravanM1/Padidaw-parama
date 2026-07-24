@@ -20,6 +20,22 @@ router.post('/reset-password/:token', resetPassword);
 router.get('/profile', authenticate, getProfile);
 router.put('/profile', authenticate, updateProfile);
 
+// Request alumni role (senior only)
+router.post('/request-alumni', authenticate, authorize('senior'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.requestedAlumni) return res.status(400).json({ message: 'Alumni request already submitted.' });
+
+    user.requestedAlumni = true;
+    await user.save();
+
+    res.json({ message: 'Alumni role request submitted. Waiting for admin approval.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Admin routes
 router.get('/admin/users', authenticate, authorize('admin'), async (req, res) => {
   try {

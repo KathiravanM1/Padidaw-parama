@@ -29,6 +29,14 @@ const UserSchema = new Schema({
     type: String,
     trim: true,
   },
+  linkedinUrl: {
+    type: String,
+    trim: true,
+  },
+  githubUrl: {
+    type: String,
+    trim: true,
+  },
   role: {
     type: String,
     required: true,
@@ -61,6 +69,10 @@ const UserSchema = new Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpiry: Date,
+  requestedAlumni: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 // Hash password before saving

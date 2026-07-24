@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, Menu, X, Twitter, Github, Linkedin, ArrowUp, LogOut, Home, Upload, FolderOpen, Users, HelpCircle, UserCheck } from 'lucide-react';
+import { GraduationCap, Menu, X, Twitter, Github, Linkedin, ArrowUp, LogOut, Home, Upload, FolderOpen, Users, HelpCircle, UserCheck, Award } from 'lucide-react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,6 +11,8 @@ const seniorNavLinks = [
     { href: "project", text: "Projects", icon: FolderOpen },
     { href: "problemsolving", text: "Problem Solving", icon: HelpCircle },
     { href: "roadmap", text: "Experience", icon: Users },
+    { href: "markingsystem", text: "Grades", icon: Award },
+    { href: "alumni", text: "Alumni Corner", icon: UserCheck },
 ];
 
 const SeniorHeader = () => {

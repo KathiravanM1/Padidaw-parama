@@ -90,7 +90,9 @@ export default function Signup() {
     password: '',
     firstName: '',
     lastName: '',
-    role: 'student'
+    role: 'student',
+    linkedinUrl: '',
+    githubUrl: '',
   });
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -117,7 +119,7 @@ export default function Signup() {
     if (result.success) {
       if (result.requiresApproval) {
         setSuccessMessage('Senior registration submitted successfully! Please wait for admin approval before you can login.');
-        setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'student' });
+        setFormData({ email: '', password: '', firstName: '', lastName: '', role: 'student', linkedinUrl: '', githubUrl: '' });
       } else {
         navigate('/student');
       }
@@ -300,7 +302,37 @@ export default function Signup() {
                     <option value="alumni">Alumni</option>
                   </select>
                 </div>
-                
+
+                {(formData.role === 'senior' || formData.role === 'alumni') && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn URL <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="url"
+                        name="linkedinUrl"
+                        value={formData.linkedinUrl}
+                        onChange={handleChange}
+                        required
+                        placeholder="https://linkedin.com/in/yourprofile"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">GitHub URL</label>
+                      <input
+                        type="url"
+                        name="githubUrl"
+                        value={formData.githubUrl}
+                        onChange={handleChange}
+                        placeholder="https://github.com/yourusername"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                    </div>
+                  </>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -410,7 +442,29 @@ export default function Signup() {
                   <option value="senior">Senior</option>
                   <option value="alumni">Alumni</option>
                 </select>
-                
+
+                {(formData.role === 'senior' || formData.role === 'alumni') && (
+                  <>
+                    <input
+                      type="url"
+                      name="linkedinUrl"
+                      value={formData.linkedinUrl}
+                      onChange={handleChange}
+                      required
+                      placeholder="LinkedIn URL *"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                    <input
+                      type="url"
+                      name="githubUrl"
+                      value={formData.githubUrl}
+                      onChange={handleChange}
+                      placeholder="GitHub URL (optional)"
+                      className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    />
+                  </>
+                )}
+
                 <button
                   type="submit"
                   disabled={loading}

@@ -29,6 +29,7 @@ import AlumniLayout from "./Layouts/AlumniLayout.jsx";
 import AlumniDashboard from "./pages/AlumniDashboard.jsx";
 import CreateAlumniPost from "./pages/CreateAlumniPost.jsx";
 import AlumniPage from "./pages/AlumniPage.jsx";
+import AlumniDirectory from "./pages/AlumniDirectory.jsx";
 import SeniorRoadmap from "./components/SeniorRoadmap.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import LoginPage from "./components/LoginPage.jsx";
@@ -53,6 +54,8 @@ function App() {
             <Route path="project" element={<ShareProject/>} />
             <Route path="problemsolving" element={<PostProblemPage/>} />
             <Route path="roadmap" element={<SeniorRoadmap/>} />
+            <Route path="markingsystem" element={<AnnaUniversityMarkingSystem />} />
+            <Route path="alumni" element={<AlumniDirectory />} />
             <Route path="profile" element={<Profile />} />
         </Route>
         <Route path="student" element={
@@ -70,7 +73,7 @@ function App() {
             <Route path="roadmap" element={<Roadmap/>} />
             <Route path="leavetracker" element={<AttendanceTracker/>}></Route>
             <Route path="profile" element={<Profile />} />
-            <Route path="alumni" element={<AlumniPage />} />
+            <Route path="alumni" element={<AlumniDirectory />} />
         </Route>
         <Route path="admin" element={
           <ProtectedRoute allowedRoles={['admin']}>

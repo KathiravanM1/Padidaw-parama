@@ -262,18 +262,16 @@ const AnnaUniversityMarkingSystem = () => {
   const calculateGPA = useCallback((semester) => {
     if (!allSemesterCourses[semester]) return '0.00';
     const courses = allSemesterCourses[semester];
-    const passedCourses = courses.filter(course => course.grade !== 'U');
-    const totalCredits = passedCourses.reduce((sum, course) => sum + Number(course.credits), 0);
-    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (Number(course.credits) * course.gradePoints), 0);
+    const totalCredits = courses.reduce((sum, course) => sum + Number(course.credits), 0);
+    const totalGradePoints = courses.reduce((sum, course) => sum + (Number(course.credits) * (course.grade === 'U' ? 0 : course.gradePoints)), 0);
     return totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
   }, [allSemesterCourses]);
 
   const calculateCGPA = useCallback(() => {
     if (selectedSemesters.length === 0) return '0.00';
     const allCourses = selectedSemesters.flatMap(semester => allSemesterCourses[semester] || []);
-    const passedCourses = allCourses.filter(course => course.grade !== 'U');
-    const totalCredits = passedCourses.reduce((sum, course) => sum + Number(course.credits), 0);
-    const totalGradePoints = passedCourses.reduce((sum, course) => sum + (Number(course.credits) * course.gradePoints), 0);
+    const totalCredits = allCourses.reduce((sum, course) => sum + Number(course.credits), 0);
+    const totalGradePoints = allCourses.reduce((sum, course) => sum + (Number(course.credits) * (course.grade === 'U' ? 0 : course.gradePoints)), 0);
     return totalCredits > 0 ? (totalGradePoints / totalCredits).toFixed(2) : '0.00';
   }, [selectedSemesters, allSemesterCourses]);
   
@@ -314,12 +312,12 @@ const AnnaUniversityMarkingSystem = () => {
           </div>
         )}
         
-        {isAuthenticated && user && user.role !== 'student' && (
+        {isAuthenticated && user && !['student', 'senior', 'alumni', 'admin'].includes(user.role) && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-600" />
               <p className="text-red-800 text-sm font-medium">
-                Access Denied: Only students can access the CGPA marking system. Your role: {user.role}
+                Access Denied: Your role: {user.role}
               </p>
             </div>
           </div>
@@ -351,8 +349,8 @@ const AnnaUniversityMarkingSystem = () => {
             </div>
           </div>
         )}
-        {/* Only show content for students */}
-        {(!isAuthenticated || (user && user.role === 'student')) && (
+        {/* Show content for students, seniors, alumni and admin */}
+        {(!isAuthenticated || (user && ['student', 'senior', 'alumni', 'admin'].includes(user.role))) && (
         <>
         {/* Assessment Breakdown Section */}
         <div 

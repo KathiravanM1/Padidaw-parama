@@ -7,7 +7,7 @@ dotenv.config();
 const updateSeniorToAlumni = async () => {
   await mongoose.connect(process.env.MONGO_URI);
 
-  const result = await User.updateMany({ role: 'alumni' }, { $set: { role: 'senior' } });
+  const result = await User.updateMany({ role: 'student' }, { $set: { role: 'senior' } });
 
   console.log(`Updated ${result.modifiedCount} user(s) from senior → alumni.`);
   process.exit(0);

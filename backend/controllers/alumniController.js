@@ -5,7 +5,7 @@ export const getAllPosts = async (req, res) => {
     const { type } = req.query;
     const filter = type ? { type } : {};
     const posts = await AlumniPost.find(filter)
-      .populate('author', 'firstName lastName')
+      .populate('author', 'firstName lastName linkedinUrl githubUrl')
       .sort({ createdAt: -1 });
     res.json({ posts });
   } catch (err) {
@@ -35,7 +35,7 @@ export const createPost = async (req, res) => {
     }
 
     const post = await AlumniPost.create(postData);
-    await post.populate('author', 'firstName lastName');
+    await post.populate('author', 'firstName lastName linkedinUrl githubUrl');
     res.status(201).json({ message: 'Post created successfully', post });
   } catch (err) {
     res.status(500).json({ message: err.message });

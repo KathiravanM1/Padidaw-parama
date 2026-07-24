@@ -97,6 +97,17 @@ const StudentHeader = () => {
                     </Link>
                   );
                 })}
+                <Link
+                  to="/student/alumni"
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    isActive('alumni')
+                      ? 'bg-amber-100 text-amber-800 font-medium'
+                      : 'text-amber-600 hover:text-amber-800 hover:bg-amber-50 border border-amber-200'
+                  } font-medium`}
+                >
+                  <Users className="w-4 h-4" />
+                  <span className="hidden lg:inline">Alumni</span>
+                </Link>
                 {user?.role === "senior" && (
                   <Link
                     to="/senior"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Briefcase, Lightbulb, FileText, ExternalLink, Search, Filter } from 'lucide-react';
+import { Briefcase, Lightbulb, FileText, ExternalLink, Search, Linkedin, Github } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
@@ -120,9 +120,25 @@ export default function AlumniPage() {
                 </div>
 
                 <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
-                  <span className="text-xs text-gray-500">
-                    By {post.author?.firstName} {post.author?.lastName}
-                  </span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs text-gray-500 truncate">
+                      By {post.author?.firstName} {post.author?.lastName}
+                    </span>
+                    {post.author?.linkedinUrl && (
+                      <a href={post.author.linkedinUrl} target="_blank" rel="noreferrer"
+                        title="Connect on LinkedIn"
+                        className="flex-shrink-0 p-1 rounded text-blue-600 hover:bg-blue-50 transition-colors">
+                        <Linkedin className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {post.author?.githubUrl && (
+                      <a href={post.author.githubUrl} target="_blank" rel="noreferrer"
+                        title="View GitHub"
+                        className="flex-shrink-0 p-1 rounded text-gray-600 hover:bg-gray-100 transition-colors">
+                        <Github className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     {post.fileUrl && (
                       <a href={post.fileUrl} target="_blank" rel="noreferrer"

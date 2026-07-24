@@ -116,7 +116,8 @@ export const getStudentScores = async (req, res) => {
     // console.log('Getting student scores for user:', req.user._id, 'Role:', req.user.role);
     
     // Check if user is a student
-    if (req.user.role !== 'student') {
+    const allowedRoles = ['student', 'senior', 'alumni', 'admin'];
+    if (!allowedRoles.includes(req.user.role)) {
       console.log('Access denied - user role is:', req.user.role);
       return res.status(403).json({
         success: false,
@@ -198,7 +199,7 @@ export const addStudentScores = async (req, res) => {
     // console.log('Adding student scores for user:', req.user._id);
     
     // Check if user is a student
-    if (req.user.role !== 'student') {
+    if (!['student', 'senior', 'alumni', 'admin'].includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Only students can access this endpoint.'
@@ -280,7 +281,7 @@ export const updateStudentScores = async (req, res) => {
     // console.log('Updating student scores for user:', req.user._id);
     
     // Check if user is a student
-    if (req.user.role !== 'student') {
+    if (!['student', 'senior', 'alumni', 'admin'].includes(req.user.role)) {
       return res.status(403).json({
         success: false,
         message: 'Access denied. Only students can access this endpoint.'

@@ -17,23 +17,27 @@ export const register = async (req, res) => {
       });
     }
 
-    const { email, password, firstName, lastName, role } = req.body;
-    // console.log('Extracted data:', { email, firstName, lastName, role });
+    const { email, password, firstName, lastName, role, linkedinUrl, githubUrl } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      // console.log('User already exists:', email);
       return res.status(400).json({ message: 'User already exists with this email' });
     }
 
-    // console.log('Creating new user...');
     const userRole = role || 'student';
+
+    if ((userRole === 'senior' || userRole === 'alumni') && !linkedinUrl) {
+      return res.status(400).json({ message: 'LinkedIn URL is required for senior/alumni.' });
+    }
+
     const user = new User({
       email,
       password,
       firstName,
       lastName,
-      role: userRole
+      role: userRole,
+      ...(linkedinUrl && { linkedinUrl }),
+      ...(githubUrl && { githubUrl }),
     });
 
     // console.log('Saving user...');
@@ -188,11 +192,11 @@ export const resetPassword = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { firstName, lastName, rollNo, registrationNo } = req.body;
+    const { firstName, lastName, rollNo, registrationNo, linkedinUrl, githubUrl } = req.body;
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { firstName, lastName, rollNo, registrationNo },
+      { firstName, lastName, rollNo, registrationNo, linkedinUrl, githubUrl },
       { new: true, runValidators: true }
     ).select('-password');
 
