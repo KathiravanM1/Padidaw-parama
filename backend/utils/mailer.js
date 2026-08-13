@@ -1,12 +1,6 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendMail = ({ to, subject, html }) =>
-  transporter.sendMail({ from: `"Vidivu" <${process.env.MAIL_USER}>`, to, subject, html });
+  resend.emails.send({ from: 'Vidivu <onboarding@resend.dev>', to, subject, html });

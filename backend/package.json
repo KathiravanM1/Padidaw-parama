@@ -25,6 +25,7 @@
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
     "nodemailer": "^9.0.3",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "resend": "^6.19.0"
   }
 }
